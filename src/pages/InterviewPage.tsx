@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Upload, FileText, Loader2, ArrowLeft, Video, Mic, MicOff, Camera, CameraOff, ChevronRight, Eye, BarChart3, Activity, Brain, Target, AlertTriangle, CheckCircle2, TrendingUp, SkipForward, Download, Users, Send, MessageCircle, BookOpen } from "lucide-react";
+import { Upload, FileText, Loader2, ArrowLeft, Video, Mic, MicOff, Camera, CameraOff, ChevronRight, Eye, BarChart3, Activity, Brain, Target, AlertTriangle, CheckCircle2, TrendingUp, SkipForward, Download, Users, Send, MessageCircle, BookOpen, Database } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,8 @@ import {
   chatWithReport,
 } from "@/lib/aiClient";
 import { downloadReportPdf } from "@/lib/generateReportPdf";
+import { storageService, StoredReport } from "@/lib/storageService";
+import { HistoryView } from "@/components/HistoryView";
 
 interface Question {
   id: number;
@@ -69,6 +71,7 @@ const InterviewPage = () => {
   const [candidateName, setCandidateName] = useState("");
   const [interviewStartTime, setInterviewStartTime] = useState<number | null>(null);
   const [interviewDuration, setInterviewDuration] = useState<string>("0m");
+  const [showHistory, setShowHistory] = useState(false);
 
   // Per-question data collection
   const [questionTranscripts, setQuestionTranscripts] = useState<string[]>([]);
@@ -310,6 +313,21 @@ const InterviewPage = () => {
       setAnalysis(data as unknown as AnalysisResult);
       setChatMessages([]);
       setStep("results");
+
+      // Auto-save to local dataset
+      storageService.saveReport({
+        candidateName: candidateName || "Anonymous",
+        duration: interviewDuration,
+        overallScore: (data as any).overall,
+        shortlist: (data as any).recruiterView?.shortlist || false,
+        recommendation: (data as any).recruiterView?.hireRecommendation || "N/A",
+        suitableRoles: (data as any).recruiterView?.suitableRoles || [],
+        analysis: data,
+        questions: allQuestions,
+        resumeText: resumeText
+      });
+
+      toast({ title: "Report Saved", description: "This report has been added to your dataset." });
     } catch (err: any) {
       toast({ title: "Analysis Error", description: err?.message || "Failed to analyze", variant: "destructive" });
     } finally {
@@ -453,6 +471,36 @@ const InterviewPage = () => {
     </div>
   );
 
+  if (showHistory) {
+    return (
+      <div className="min-h-screen bg-background">
+        <nav className="border-b border-border bg-background/80 backdrop-blur-xl">
+          <div className="container mx-auto flex h-14 items-center px-6 gap-4">
+            <button onClick={() => setShowHistory(false)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-4 w-4" /> Back to App
+            </button>
+            <span className="text-sm font-mono text-muted-foreground">Dataset Explorer</span>
+          </div>
+        </nav>
+        <div className="container mx-auto px-6 py-10 max-w-5xl">
+          <HistoryView
+            onBack={() => setShowHistory(false)}
+            onViewReport={(r) => {
+              setAnalysis(r.analysis);
+              setQuestions(r.questions.slice(0, 5));
+              setHrQuestions(r.questions.slice(5));
+              setCandidateName(r.candidateName);
+              setInterviewDuration(r.duration);
+              setResumeText(r.resumeText);
+              setStep("results");
+              setShowHistory(false);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <nav className="border-b border-border bg-background/80 backdrop-blur-xl">
@@ -477,7 +525,12 @@ const InterviewPage = () => {
           <div className="space-y-6">
             <div>
               <h1 className="text-3xl font-bold mb-2">Upload Your Resume</h1>
-              <p className="text-muted-foreground">Paste text or upload a <strong>.pdf</strong> / <strong>.txt</strong> file.</p>
+              <p className="text-muted-foreground flex justify-between items-center">
+                <span>Paste text or upload a <strong>.pdf</strong> / <strong>.txt</strong> file.</span>
+                <Button variant="ghost" size="sm" onClick={() => setShowHistory(true)} className="gap-2 text-primary hover:text-primary hover:bg-primary/10">
+                  <Database className="h-4 w-4" /> View Dataset
+                </Button>
+              </p>
             </div>
             <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 space-y-4">
               <div>
@@ -846,6 +899,9 @@ const InterviewPage = () => {
             <div className="flex gap-3 flex-wrap">
               <Button onClick={() => downloadReportPdf(analysis, [...questions, ...hrQuestions], resumeText)} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
                 <Download className="h-4 w-4" /> Download PDF Report
+              </Button>
+              <Button variant="outline" onClick={() => setShowHistory(true)} className="border-border gap-2">
+                <Database className="h-4 w-4" /> View Full Dataset
               </Button>
               <Button variant="outline" onClick={() => { setStep("upload"); setQuestions([]); setHrQuestions([]); setAnalysis(null); setResumeText(""); setTranscript(""); setCurrentQ(0); setChatMessages([]); }} className="border-border gap-2">
                 New Resume
