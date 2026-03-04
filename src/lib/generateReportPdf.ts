@@ -11,6 +11,9 @@ interface AnalysisResult {
   summary?: string;
   topStrengths?: string[];
   topImprovements?: string[];
+  metadata?: { avgResponseLength: number; fillerWordCount: number; confidenceScore: number };
+  resumeAlignment?: { skillsInResume: string[]; skillsDemonstrated: string[]; alignmentPercentage: number };
+  recruiterView?: { shortlist: boolean; hireRecommendation: string; suitableRoles: string[] };
 }
 
 interface Question {
@@ -48,6 +51,21 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
   y += 4;
   doc.text("Powered by Groq AI + MediaPipe EMA Analysis", pw / 2, y, { align: "center" });
   doc.setTextColor(0);
+  y += 15;
+
+  // Candidate Profile Section
+  checkPage(40);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("Candidate Profile", 15, y);
+  y += 8;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Interview Type: Resume + HR Mock`, 15, y);
+  doc.text(`Difficulty Level: AI Adaptive`, pw / 2, y);
+  y += 6;
+  doc.text(`Date & Time: ${new Date().toLocaleString()}`, 15, y);
+  doc.text(`Location: Remote Web Client`, pw / 2, y);
   y += 12;
 
   // Overall Score
@@ -61,7 +79,26 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.text(scoreLabel(analysis.overall), pw / 2, y, { align: "center" });
-  y += 14;
+  y += 12;
+
+  // Recruiter Verdict
+  if (analysis.recruiterView) {
+    checkPage(30);
+    doc.setFillColor(analysis.recruiterView.shortlist ? 240 : 255, analysis.recruiterView.shortlist ? 255 : 240, 240);
+    doc.rect(15, y, pw - 30, 25, "F");
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Recruiter Verdict", 20, y + 8);
+    doc.setFontSize(16);
+    doc.setTextColor(analysis.recruiterView.shortlist ? 0 : 200, analysis.recruiterView.shortlist ? 150 : 0, 0);
+    doc.text(analysis.recruiterView.shortlist ? "SHORTLISTED" : "NOT SHORTLISTED", pw - 20, y + 8, { align: "right" });
+    doc.setTextColor(0);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Recommendation: ${analysis.recruiterView.hireRecommendation}`, 20, y + 16);
+    doc.text(`Target Roles: ${analysis.recruiterView.suitableRoles?.join(", ")}`, 20, y + 21);
+    y += 32;
+  }
 
   // Summary
   if (analysis.summary) {
@@ -98,6 +135,35 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
 
   drawList("Top Strengths", analysis.topStrengths || [], "✓");
   drawList("Areas to Improve", analysis.topImprovements || [], "→");
+
+  // Metadata & Alignment
+  if (analysis.metadata || analysis.resumeAlignment) {
+    checkPage(40);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Professional Intelligence Analytics", 15, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    if (analysis.metadata) {
+      doc.text(`Average Response Length: ${analysis.metadata.avgResponseLength} words`, 20, y);
+      doc.text(`Filler Words Detected: ${analysis.metadata.fillerWordCount}`, pw / 2, y);
+      y += 6;
+      doc.text(`Analysis Confidence: ${analysis.metadata.confidenceScore}%`, 20, y);
+      y += 8;
+    }
+    if (analysis.resumeAlignment) {
+      doc.setFont("helvetica", "bold");
+      doc.text(`Resume Skills Alignment: ${analysis.resumeAlignment.alignmentPercentage}%`, 20, y);
+      y += 6;
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8);
+      doc.text(`Extracted: ${analysis.resumeAlignment.skillsInResume?.slice(0, 8).join(", ")}...`, 20, y);
+      y += 10;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+    }
+  }
 
   // Score section helper
   const drawScores = (title: string, scores: [string, number][], feedback?: string) => {

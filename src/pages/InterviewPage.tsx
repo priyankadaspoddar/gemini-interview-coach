@@ -40,6 +40,9 @@ interface AnalysisResult {
   topImprovements?: string[];
   algorithmNotes?: { facsUnitsDetected?: string; emaSmoothingApplied?: boolean; mediaPipeConfidence?: string; voicePatternType?: string };
   questionBreakdown?: { questionNumber: number; userAnswer: string; idealAnswer: string; score: number; feedback: string }[];
+  metadata?: { avgResponseLength: number; fillerWordCount: number; confidenceScore: number };
+  resumeAlignment?: { skillsInResume: string[]; skillsDemonstrated: string[]; alignmentPercentage: number };
+  recruiterView?: { shortlist: boolean; hireRecommendation: string; suitableRoles: string[] };
 }
 
 type Step = "upload" | "questions" | "resume-tips" | "practice" | "hr-questions" | "hr-tips" | "hr-practice" | "results";
@@ -63,6 +66,9 @@ const InterviewPage = () => {
   const [transcript, setTranscript] = useState("");
   const [cameraOn, setCameraOn] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState("");
+  const [candidateName, setCandidateName] = useState("");
+  const [interviewStartTime, setInterviewStartTime] = useState<number | null>(null);
+  const [interviewDuration, setInterviewDuration] = useState<string>("0m");
 
   // Per-question data collection
   const [questionTranscripts, setQuestionTranscripts] = useState<string[]>([]);
@@ -205,6 +211,7 @@ const InterviewPage = () => {
   useEffect(() => {
     if (step === "practice" || step === "hr-practice") {
       if (!cameraOn) startCamera();
+      if (!interviewStartTime) setInterviewStartTime(Date.now());
     }
   }, [step]);
 
@@ -243,9 +250,20 @@ const InterviewPage = () => {
   const goToNextQuestion = () => {
     saveCurrentQuestionData();
     if (currentQ < activeQuestions.length - 1) {
-      setCurrentQ(prev => prev + 1);
-      setTranscript("");
-      resetHistory();
+      // Robustly clear transcript and reset recognition
+      if (isRecording) {
+        recognitionRef.current?.stop();
+        setTimeout(() => {
+          setTranscript("");
+          setCurrentQ(prev => prev + 1);
+          resetHistory();
+          recognitionRef.current?.start();
+        }, 300);
+      } else {
+        setTranscript("");
+        setCurrentQ(prev => prev + 1);
+        resetHistory();
+      }
     }
   };
 
@@ -277,8 +295,18 @@ const InterviewPage = () => {
         finalTranscripts,
         finalScores,
         allQuestions,
+        resumeText,
         apiKeyInput || undefined
       );
+
+      // Calculate final duration
+      if (interviewStartTime) {
+        const diff = Math.floor((Date.now() - interviewStartTime) / 1000);
+        const mins = Math.floor(diff / 60);
+        const secs = diff % 60;
+        setInterviewDuration(`${mins}m ${secs}s`);
+      }
+
       setAnalysis(data as unknown as AnalysisResult);
       setChatMessages([]);
       setStep("results");
@@ -451,11 +479,18 @@ const InterviewPage = () => {
               <h1 className="text-3xl font-bold mb-2">Upload Your Resume</h1>
               <p className="text-muted-foreground">Paste text or upload a <strong>.pdf</strong> / <strong>.txt</strong> file.</p>
             </div>
-            <div className="rounded-xl border border-primary/30 bg-primary/5 p-5">
-              <h3 className="font-semibold mb-2 flex items-center gap-2 text-primary">⚡ Groq API Key</h3>
-              <input type="password" placeholder="Paste your key from https://console.groq.com/keys" value={apiKeyInput} onChange={(e) => setApiKeyInput(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-secondary/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              <p className="text-xs text-muted-foreground mt-1.5">Free key — used only in your browser. <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-primary underline">Get one here</a></p>
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2 flex items-center gap-2 text-primary">👤 Candidate Name</h3>
+                <input type="text" placeholder="Enter your full name" value={candidateName} onChange={(e) => setCandidateName(e.target.value)}
+                  className="w-full px-3 py-2 text-sm bg-secondary/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2 flex items-center gap-2 text-primary">⚡ Groq API Key</h3>
+                <input type="password" placeholder="Paste your key from https://console.groq.com/keys" value={apiKeyInput} onChange={(e) => setApiKeyInput(e.target.value)}
+                  className="w-full px-3 py-2 text-sm bg-secondary/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                <p className="text-xs text-muted-foreground mt-1.5">Free key — used only in your browser. <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-primary underline">Get one here</a></p>
+              </div>
             </div>
             <div className="rounded-xl border border-border bg-card p-6 space-y-4">
               <textarea value={resumeText} onChange={(e) => setResumeText(e.target.value)} placeholder="Paste your resume text here..."
@@ -594,18 +629,104 @@ const InterviewPage = () => {
               <p className="text-muted-foreground">Comprehensive AI analysis of all 10 questions</p>
             </div>
 
+            {/* Candidate Profile Info */}
+            <div className="rounded-xl border border-border bg-card p-6">
+              <h3 className="font-semibold mb-4 flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> Candidate Profile</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-sm">
+                <div><span className="text-muted-foreground block mb-1">Name</span><span className="font-medium">{candidateName || "Anonymous"}</span></div>
+                <div><span className="text-muted-foreground block mb-1">Interview Type</span><span className="font-medium">Full AI Mock (HR + Resume)</span></div>
+                <div><span className="text-muted-foreground block mb-1">Difficulty</span><span className="font-medium">Adaptive AI Range</span></div>
+                <div><span className="text-muted-foreground block mb-1">Duration</span><span className="font-medium">{interviewDuration}</span></div>
+                <div><span className="text-muted-foreground block mb-1">Date & Time</span><span className="font-medium">{new Date().toLocaleString()}</span></div>
+              </div>
+            </div>
+
             {/* Overall Score */}
             <div className="text-center py-8">
               <div className="inline-flex items-center justify-center w-28 h-28 rounded-full border-4 border-primary animate-pulse-glow">
                 <span className="text-4xl font-bold text-primary">{analysis.overall}</span>
               </div>
-              <p className="text-muted-foreground mt-2">Overall Score</p>
+              <p className="text-muted-foreground mt-2">Overall Performance Score</p>
             </div>
+
+            {/* Recruiter View Summary */}
+            {analysis.recruiterView && (
+              <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-bold flex items-center gap-2 text-lg"><Brain className="h-5 w-5" /> Recruiter Verdict</h3>
+                  <div className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm ${analysis.recruiterView.shortlist ? "bg-emerald-500 text-white" : "bg-red-500 text-white"}`}>
+                    {analysis.recruiterView.shortlist ? "SHORTLISTED" : "REJECTED"}
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-lg bg-card border border-border">
+                    <span className="text-xs text-muted-foreground uppercase font-semibold">Hire Recommendation</span>
+                    <p className={`text-xl font-bold mt-1 ${analysis.recruiterView.hireRecommendation === 'Yes' ? 'text-emerald-500' : 'text-amber-500'}`}>{analysis.recruiterView.hireRecommendation}</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-card border border-border">
+                    <span className="text-xs text-muted-foreground uppercase font-semibold">Suitable Roles</span>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {analysis.recruiterView.suitableRoles.map((r, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-secondary rounded text-xs text-foreground">{r}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {analysis.summary && (
               <div className="rounded-xl border border-border bg-card p-6">
-                <h3 className="font-semibold mb-3 flex items-center gap-2"><Target className="h-5 w-5 text-primary" /> Summary</h3>
+                <h3 className="font-semibold mb-3 flex items-center gap-2"><Target className="h-5 w-5 text-primary" /> Performance Summary</h3>
                 <p className="text-muted-foreground leading-relaxed">{analysis.summary}</p>
+              </div>
+            )}
+
+            {/* Interview Metadata Section */}
+            {analysis.metadata && (
+              <div className="rounded-xl border border-border bg-card p-6">
+                <h3 className="font-semibold mb-4 flex items-center gap-2"><Activity className="h-5 w-5 text-accent" /> Professional Delivery Metadata</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                  <div>
+                    <span className="text-xs text-muted-foreground uppercase font-semibold">Speaking Pace</span>
+                    <p className="text-lg font-medium">{analysis.metadata.avgResponseLength} wpm (avg)</p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground uppercase font-semibold">Filler Words</span>
+                    <p className="text-lg font-medium">{analysis.metadata.fillerWordCount} detected</p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-muted-foreground uppercase font-semibold">Confidence Score</span>
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-emerald-500" />
+                      <p className="text-lg font-medium">{analysis.metadata.confidenceScore}%</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Resume Alignment Analys */}
+            {analysis.resumeAlignment && (
+              <div className="rounded-xl border border-border bg-card p-6">
+                <h3 className="font-semibold mb-4 flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-emerald-500" /> Resume Alignment & Skills Fit</h3>
+                <div className="space-y-4">
+                  <ScoreBar label="Job Market Alignment" value={analysis.resumeAlignment.alignmentPercentage} />
+                  <div className="grid sm:grid-cols-2 gap-4 mt-4">
+                    <div className="p-3 bg-secondary/30 rounded-lg">
+                      <h4 className="text-xs font-bold text-muted-foreground mb-2">Resume Keywords</h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {analysis.resumeAlignment.skillsInResume.map((s, i) => (<span key={i} className="px-2 py-0.5 bg-background border border-border rounded text-[10px]">{s}</span>))}
+                      </div>
+                    </div>
+                    <div className="p-3 bg-emerald-500/5 rounded-lg">
+                      <h4 className="text-xs font-bold text-emerald-600/70 mb-2">Demonstrated Skills</h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {analysis.resumeAlignment.skillsDemonstrated.map((s, i) => (<span key={i} className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded text-[10px] text-emerald-600">{s}</span>))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 

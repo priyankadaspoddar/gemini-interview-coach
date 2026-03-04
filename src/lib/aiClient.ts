@@ -85,7 +85,9 @@ export async function generateQuestionsDirect(
   apiKeyOverride?: string
 ): Promise<unknown[]> {
   const key = getKey(apiKeyOverride);
+  const randomSeed = Math.random().toString(36).substring(7);
   const prompt = `You are an expert technical interviewer. ONLY use information EXPLICITLY in the resume. Return ONLY a JSON object with a "questions" array of ${numberOfQuestions} interview questions. 
+  Randomness Seed: ${randomSeed}. Ensure this set of questions is unique and varies from common defaults. Focus on different technical nuances from the resume.
   Format: {"questions": [{"id":1,"question":"...","category":"Technical","difficulty":"Medium","relatedSkill":"...","expectedKeyPoints":["..."]}]}
   
   ===== RESUME =====
@@ -95,7 +97,7 @@ export async function generateQuestionsDirect(
   const text = await callGroq(key, [
     { role: "system", content: "You are a helpful assistant that returns data in JSON format." },
     { role: "user", content: prompt }
-  ], 0.2);
+  ], 0.4);
 
   const parsed = parseJsonResponse(text, "object");
   const qs = parsed.questions || parsed;
@@ -108,7 +110,9 @@ export async function generateHRQuestionsDirect(
   apiKeyOverride?: string
 ): Promise<unknown[]> {
   const key = getKey(apiKeyOverride);
+  const randomSeed = Math.random().toString(36).substring(7);
   const prompt = `You are a senior HR interviewer. Based on the candidate's resume, generate ${numberOfQuestions} HR interview questions.
+  Randomness Seed: ${randomSeed}. Ensure variety in behavioral, situational, and technical HR categories.
   Return ONLY a JSON object with a "questions" array.
   
   Mix these categories equally:
@@ -125,7 +129,7 @@ export async function generateHRQuestionsDirect(
   const text = await callGroq(key, [
     { role: "system", content: "You are a helpful assistant that returns data in JSON format." },
     { role: "user", content: prompt }
-  ], 0.3);
+  ], 0.5);
 
   const parsed = parseJsonResponse(text, "object");
   const qs = parsed.questions || parsed;
@@ -136,6 +140,7 @@ export async function analyzePresentationDirect(
   transcripts: string[],
   allMediaPipeScores: Record<string, number>[],
   questions: { question: string }[],
+  resumeText: string,
   apiKeyOverride?: string
 ): Promise<Record<string, unknown>> {
   const key = getKey(apiKeyOverride);
@@ -148,7 +153,10 @@ export async function analyzePresentationDirect(
 
   const prompt = `Analyze this complete interview performance across ${questions.length} questions.
   
-  Questions & Responses:
+  ===== RESUME CONTEXT =====
+  ${resumeText}
+  
+  ===== INTERVIEW DATA =====
   ${JSON.stringify(questionsData, null, 2)}
   
   Return ONLY valid JSON: {
@@ -156,16 +164,36 @@ export async function analyzePresentationDirect(
     "voice": {"clarity":0,"pace":0,"tone":0,"engagement":0,"feedback":"detailed feedback"},
     "content": {"relevance":0,"depth":0,"starMethod":0,"feedback":"detailed feedback"},
     "overall": 0,
-    "summary": "comprehensive summary of the interview performance",
-    "topStrengths": ["strength1", "strength2", "strength3"],
-    "topImprovements": ["improvement1", "improvement2", "improvement3"],
-    "questionBreakdown": [{"questionNumber":1,"userAnswer":"transcribed text","idealAnswer":"highly detailed example of what the user SHOULD have said for this specific question based on their resume (use STAR method if applicable)","score":0,"feedback":"brief constructive feedback"}]
+    "summary": "comprehensive summary",
+    "topStrengths": ["s1", "s2"],
+    "topImprovements": ["i1", "i2"],
+    "questionBreakdown": [{"questionNumber":1,"userAnswer":"...","idealAnswer":"...","score":0,"feedback":"..."}],
+    "metadata": {
+      "avgResponseLength": 0,
+       "fillerWordCount": 0,
+       "confidenceScore": 0
+    },
+    "resumeAlignment": {
+      "skillsInResume": ["skill1", "skill2"],
+      "skillsDemonstrated": ["skillA", "skillB"],
+      "alignmentPercentage": 0
+    },
+    "recruiterView": {
+      "shortlist": true,
+      "hireRecommendation": "Yes/No/Borderline",
+      "suitableRoles": ["Role 1", "Role 2"]
+    }
   }
   
-  Score all values 0-100. Use MediaPipe scores for vision analysis. Analyze transcripts for content and voice quality. Provide a detailed "idealAnswer" for each question that serves as a perfect example of how the candidate should have responded based on their specific resume content or HR scenario. Be thorough and constructive.`;
+  Instructions:
+  1. Analyze transcripts for filler words (um, uh, like, so, basically).
+  2. Compare "Skills in Resume" (from resume text) with "Skills Demonstrated" (from transcripts).
+  3. Determine if the candidate should be shortlisted and their suitability for roles like ML Intern, AI Research, SDE, Professor, etc.
+  4. Provide a detailed "idealAnswer" for each question as a perfect STAR-method example.
+  5. Scores are 0-100. Be intelligent, insightful, and official.`;
 
   const text = await callGroq(key, [
-    { role: "system", content: "You are an expert interview coach. Return comprehensive analysis in strict JSON format." },
+    { role: "system", content: "You are an expert recruiter and interview coach. Return comprehensive analysis in strict JSON format." },
     { role: "user", content: prompt }
   ], 0.3);
 
