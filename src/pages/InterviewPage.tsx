@@ -314,8 +314,8 @@ const InterviewPage = () => {
       setChatMessages([]);
       setStep("results");
 
-      // Auto-save to local and global dataset
-      await storageService.saveReport({
+      // Auto-save to local dataset
+      storageService.saveReport({
         candidateName: candidateName || "Anonymous",
         duration: interviewDuration,
         overallScore: (data as any).overall,

@@ -15,14 +15,12 @@ import {
     Eye,
     User,
     Calendar,
-    Trophy,
     CheckCircle2,
     XCircle,
     Database,
     ArrowLeft
 } from "lucide-react";
 import { downloadReportPdf } from "@/lib/generateReportPdf";
-import { Cloud, Loader2 } from "lucide-react";
 
 interface HistoryViewProps {
     onBack: () => void;
@@ -31,28 +29,15 @@ interface HistoryViewProps {
 
 export const HistoryView = ({ onBack, onViewReport }: HistoryViewProps) => {
     const [reports, setReports] = useState<StoredReport[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    const fetchReports = async () => {
-        setLoading(true);
-        try {
-            const data = await storageService.getReports();
-            setReports(data || []);
-        } catch (err) {
-            console.error("Fetch failed:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     useEffect(() => {
-        fetchReports();
+        setReports(storageService.getReports());
     }, []);
 
-    const handleDelete = async (id: string, name: string) => {
+    const handleDelete = (id: string, name: string) => {
         if (confirm(`Are you sure you want to delete the report for ${name}?`)) {
-            await storageService.deleteReport(id);
-            fetchReports();
+            storageService.deleteReport(id);
+            setReports(storageService.getReports());
         }
     };
 
@@ -60,21 +45,12 @@ export const HistoryView = ({ onBack, onViewReport }: HistoryViewProps) => {
         storageService.exportDataset();
     };
 
-    if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-muted-foreground animate-pulse">Syncing with global dataset...</p>
-            </div>
-        );
-    }
-
     if (reports.length === 0) {
         return (
             <div className="space-y-6">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
-                        <ArrowLeft className="h-4 w-4" /> Back to Interview
+                        <ArrowLeft className="h-4 w-4" /> Back to App
                     </Button>
                     <h1 className="text-3xl font-bold">Interview Dataset</h1>
                 </div>
@@ -99,7 +75,7 @@ export const HistoryView = ({ onBack, onViewReport }: HistoryViewProps) => {
                     </Button>
                     <div>
                         <h1 className="text-3xl font-bold">Interview Dataset</h1>
-                        <p className="text-sm text-muted-foreground">Historical records of all mock interviews</p>
+                        <p className="text-sm text-muted-foreground">Historical records stored locally on your device</p>
                     </div>
                 </div>
                 <Button variant="outline" onClick={handleExport} className="gap-2 self-start sm:self-auto">
@@ -133,7 +109,6 @@ export const HistoryView = ({ onBack, onViewReport }: HistoryViewProps) => {
                                     <div className="flex items-center gap-2">
                                         <Calendar className="h-3 w-3" />
                                         {new Date(report.date).toLocaleDateString()}
-                                        <Cloud className="h-3 w-4 text-primary/40 ml-1" title="Stored in Global Database" />
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-center">
@@ -175,7 +150,7 @@ export const HistoryView = ({ onBack, onViewReport }: HistoryViewProps) => {
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/30 p-4 rounded-lg">
                 <Database className="h-4 w-4" />
-                <span>Data is stored locally in your browser. Clearing your browser cache may remove these records. Use the Export button to backup your data.</span>
+                <span>Data is stored locally in your browser. Use the Export button to save a copy of your personal dataset.</span>
             </div>
         </div>
     );
