@@ -53,6 +53,29 @@ const algorithms = [
     ],
     color: "primary",
   },
+  {
+    icon: Sparkles,
+    title: "Intelligence Reporting",
+    subtitle: "Professional Verdict & Analytics",
+    description: "Synthesizes verbal data and resume content to provide high-level recruitment analytics and alignment scores.",
+    steps: [
+      "Map demonstrated skills to resume keywords",
+      "Calculate alignment percentage and gap analysis",
+      "Detect confidence trends and delivery metadata",
+      "Provide recruiter shortlist verdict (Yes/No)",
+      "Suggest suitable industry roles based on performance",
+    ],
+    color: "accent",
+  }
+];
+
+const techStack = [
+  { name: "Groq AI", usage: "Llama-3 Reasoning Core", color: "text-orange-400" },
+  { name: "MediaPipe", usage: "Real-time Vision Modeling", color: "text-emerald-400" },
+  { name: "Web Speech", usage: "Low-latency Transcription", color: "text-blue-400" },
+  { name: "React 18", usage: "Dynamic UI State Control", color: "text-sky-400" },
+  { name: "FACS", usage: "Facial Expression Coding", color: "text-primary" },
+  { name: "Tailwind", usage: "Premium Design System", color: "text-purple-400" },
 ];
 
 const features = [
@@ -193,6 +216,20 @@ const Index = () => {
                 <f.icon className="h-8 w-8 text-primary mb-4" />
                 <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
                 <p className="text-sm text-muted-foreground">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Tech Stack Horizontal Scroll/Grid */}
+      <section className="py-20 border-y border-border/50 bg-secondary/20">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-70 grayscale hover:grayscale-0 transition-all">
+            {techStack.map((tech) => (
+              <div key={tech.name} className="text-center group">
+                <div className={`text-sm font-bold tracking-tight uppercase ${tech.color} mb-1 group-hover:scale-110 transition-transform`}>{tech.name}</div>
+                <div className="text-[10px] text-muted-foreground">{tech.usage}</div>
               </div>
             ))}
           </div>
