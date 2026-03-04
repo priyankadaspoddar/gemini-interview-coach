@@ -3,6 +3,14 @@
  */
 import jsPDF from "jspdf";
 
+interface QuestionBreakdownItem {
+  questionNumber?: number;
+  userAnswer: string;
+  idealAnswer: string;
+  score: number;
+  feedback: string;
+}
+
 interface AnalysisResult {
   vision: { eyeContact: number; posture: number; expression: number; bodyLanguage: number; feedback?: string };
   voice: { clarity: number; pace: number; tone: number; engagement: number; feedback?: string };
@@ -14,6 +22,7 @@ interface AnalysisResult {
   metadata?: { avgResponseLength: number; fillerWordCount: number; confidenceScore: number };
   resumeAlignment?: { skillsInResume: string[]; skillsDemonstrated: string[]; alignmentPercentage: number };
   recruiterView?: { shortlist: boolean; hireRecommendation: string; suitableRoles: string[] };
+  questionBreakdown?: QuestionBreakdownItem[];
 }
 
 interface Question {
@@ -240,6 +249,105 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
       doc.text(`${q.category} · ${q.difficulty} · ${q.relatedSkill}`, 22, y);
       doc.setTextColor(0);
       y += 6;
+    });
+  }
+
+  // Detailed Answer Report
+  if (analysis.questionBreakdown && analysis.questionBreakdown.length > 0) {
+    addPage();
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("Detailed Answer Report", pw / 2, y, { align: "center" });
+    y += 4;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120);
+    doc.text("Per-question breakdown with your answers, ideal answers, scores, and feedback", pw / 2, y, { align: "center" });
+    doc.setTextColor(0);
+    y += 12;
+
+    analysis.questionBreakdown.forEach((qb, i) => {
+      const questionObj = questions[i];
+      const qNum = qb.questionNumber ?? i + 1;
+
+      checkPage(60);
+
+      // Question header box
+      doc.setFillColor(240, 242, 255);
+      doc.rect(15, y, pw - 30, 10, "F");
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(60, 60, 180);
+      doc.text(`Q${qNum}`, 19, y + 7);
+      doc.setTextColor(0);
+      // Score badge
+      const scoreColor: [number, number, number] = qb.score >= 70 ? [34, 197, 94] : qb.score >= 50 ? [245, 158, 11] : [239, 68, 68];
+      doc.setFillColor(...scoreColor);
+      doc.roundedRect(pw - 48, y + 2, 30, 6, 2, 2, "F");
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(255, 255, 255);
+      doc.text(`Score: ${Math.round(qb.score)}%`, pw - 33, y + 6.5, { align: "center" });
+      doc.setTextColor(0);
+      y += 13;
+
+      // Question text
+      if (questionObj) {
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        const qLines = doc.splitTextToSize(questionObj.question, pw - 35);
+        checkPage(qLines.length * 5 + 4);
+        doc.text(qLines, 18, y);
+        y += qLines.length * 5 + 4;
+      }
+
+      // Your Answer
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(100);
+      doc.text("YOUR ANSWER TRANSCRIPT", 18, y);
+      doc.setTextColor(0);
+      y += 5;
+      doc.setFont("helvetica", "italic");
+      const answerText = qb.userAnswer ? `"${qb.userAnswer}"` : "(No audible answer detected)";
+      const answerLines = doc.splitTextToSize(answerText, pw - 40);
+      checkPage(answerLines.length * 4.5 + 4);
+      doc.setFillColor(245, 245, 245);
+      doc.rect(18, y - 2, pw - 36, answerLines.length * 4.5 + 4, "F");
+      doc.text(answerLines, 20, y + 2);
+      y += answerLines.length * 4.5 + 8;
+
+      // Ideal Answer
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(20, 120, 60);
+      doc.text("IDEAL ANSWER APPROACH", 18, y);
+      doc.setTextColor(0);
+      y += 5;
+      doc.setFont("helvetica", "normal");
+      const idealLines = doc.splitTextToSize(qb.idealAnswer || "", pw - 40);
+      checkPage(idealLines.length * 4.5 + 4);
+      doc.setFillColor(240, 253, 244);
+      doc.rect(18, y - 2, pw - 36, idealLines.length * 4.5 + 4, "F");
+      doc.text(idealLines, 20, y + 2);
+      y += idealLines.length * 4.5 + 8;
+
+      // Feedback
+      if (qb.feedback) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(180, 90, 0);
+        doc.text("FEEDBACK", 18, y);
+        doc.setTextColor(0);
+        y += 5;
+        doc.setFont("helvetica", "normal");
+        const fbLines = doc.splitTextToSize(qb.feedback, pw - 40);
+        checkPage(fbLines.length * 4.5 + 4);
+        doc.text(fbLines, 20, y);
+        y += fbLines.length * 4.5 + 4;
+      }
+
+      y += 8; // gap between questions
     });
   }
 
