@@ -1,5 +1,12 @@
 {
-  "dependencies": {
-    "jspdf": "^4.2.0"
+  "name": "hamii-interview-coach",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "cd gemini-interview-coach-main && npm run dev",
+    "build": "cd gemini-interview-coach-main && npm run build",
+    "preview": "cd gemini-interview-coach-main && npm run preview",
+    "test": "cd gemini-interview-coach-main && npm run test"
   }
 }
