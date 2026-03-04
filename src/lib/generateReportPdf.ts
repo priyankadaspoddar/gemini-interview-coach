@@ -111,22 +111,22 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
 
   // Summary
   if (analysis.summary) {
-    checkPage(30);
+    const summaryLines = doc.splitTextToSize(analysis.summary, pw - 30);
+    checkPage(15 + summaryLines.length * 5);
     doc.setFontSize(13);
     doc.setFont("helvetica", "bold");
     doc.text("Summary", 15, y);
     y += 7;
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    const lines = doc.splitTextToSize(analysis.summary, pw - 30);
-    doc.text(lines, 15, y);
-    y += lines.length * 5 + 8;
+    doc.text(summaryLines, 15, y);
+    y += summaryLines.length * 5 + 8;
   }
 
   // Strengths & Improvements
   const drawList = (title: string, items: string[], prefix: string) => {
     if (!items?.length) return;
-    checkPage(10 + items.length * 6);
+    checkPage(15);
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.text(title, 15, y);
@@ -134,16 +134,16 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     items.forEach(item => {
-      checkPage(7);
       const lines = doc.splitTextToSize(`${prefix} ${item}`, pw - 35);
+      checkPage(lines.length * 5 + 2);
       doc.text(lines, 20, y);
       y += lines.length * 5 + 2;
     });
     y += 5;
   };
 
-  drawList("Top Strengths", analysis.topStrengths || [], "✓");
-  drawList("Areas to Improve", analysis.topImprovements || [], "→");
+  drawList("Top Strengths", analysis.topStrengths || [], "*");
+  drawList("Areas to Improve", analysis.topImprovements || [], "-");
 
   // Metadata & Alignment
   if (analysis.metadata || analysis.resumeAlignment) {
@@ -199,12 +199,12 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
       y += 7;
     });
     if (feedback) {
-      checkPage(10);
+      const fbLines = doc.splitTextToSize(feedback, pw - 40);
+      checkPage(fbLines.length * 5 + 3);
       doc.setTextColor(100);
-      const lines = doc.splitTextToSize(feedback, pw - 40);
-      doc.text(lines, 20, y);
+      doc.text(fbLines, 20, y);
       doc.setTextColor(0);
-      y += lines.length * 5 + 3;
+      y += fbLines.length * 5 + 3;
     }
     y += 5;
   };
