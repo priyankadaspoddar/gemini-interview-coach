@@ -22,6 +22,7 @@ import {
     ArrowLeft
 } from "lucide-react";
 import { downloadReportPdf } from "@/lib/generateReportPdf";
+import { Cloud, Loader2 } from "lucide-react";
 
 interface HistoryViewProps {
     onBack: () => void;
@@ -30,21 +31,43 @@ interface HistoryViewProps {
 
 export const HistoryView = ({ onBack, onViewReport }: HistoryViewProps) => {
     const [reports, setReports] = useState<StoredReport[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchReports = async () => {
+        setLoading(true);
+        try {
+            const data = await storageService.getReports();
+            setReports(data || []);
+        } catch (err) {
+            console.error("Fetch failed:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        setReports(storageService.getReports());
+        fetchReports();
     }, []);
 
-    const handleDelete = (id: string, name: string) => {
+    const handleDelete = async (id: string, name: string) => {
         if (confirm(`Are you sure you want to delete the report for ${name}?`)) {
-            storageService.deleteReport(id);
-            setReports(storageService.getReports());
+            await storageService.deleteReport(id);
+            fetchReports();
         }
     };
 
     const handleExport = () => {
         storageService.exportDataset();
     };
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="text-muted-foreground animate-pulse">Syncing with global dataset...</p>
+            </div>
+        );
+    }
 
     if (reports.length === 0) {
         return (
@@ -110,6 +133,7 @@ export const HistoryView = ({ onBack, onViewReport }: HistoryViewProps) => {
                                     <div className="flex items-center gap-2">
                                         <Calendar className="h-3 w-3" />
                                         {new Date(report.date).toLocaleDateString()}
+                                        <Cloud className="h-3 w-4 text-primary/40 ml-1" title="Stored in Global Database" />
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-center">
