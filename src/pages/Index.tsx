@@ -1,4 +1,4 @@
-import { FileText, Brain, Eye, Mic, ArrowRight, Upload, Sparkles, Shield, Zap, BookOpen } from "lucide-react";
+import { FileText, Brain, Eye, Mic, ArrowRight, Upload, Sparkles, Shield, Zap, BookOpen, Layout, Database, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -69,6 +69,75 @@ const algorithms = [
   }
 ];
 
+const flowchartSteps = [
+  {
+    id: 1,
+    title: "Resume Ingestion",
+    desc: "PDF/Text extraction using OCR & semantic chunking.",
+    icon: Upload,
+    techs: ["PDF.js", "Tesseract", "Web Worker"]
+  },
+  {
+    id: 2,
+    title: "NER-KE Analysis",
+    desc: "Entity recognition for skills, roles, and experience mapping.",
+    icon: Brain,
+    techs: ["Groq AI", "Llama-3", "Regex Engine"]
+  },
+  {
+    id: 3,
+    title: "Multimodal Session",
+    desc: "Real-time sync of video frames and audio transcripts.",
+    icon: Zap,
+    techs: ["MediaPipe", "Web Speech API", "WebRTC"]
+  },
+  {
+    id: 4,
+    title: "Intelligence synthesis",
+    desc: "Alignment scoring & recruiter verdict generation.",
+    icon: Sparkles,
+    techs: ["FACS", "NLP Transformers", "Firebase"]
+  }
+];
+
+const detailedTechStack = [
+  {
+    category: "Frontend & UI/UX",
+    icon: Layout,
+    description: "High-performance, responsive interface with glassmorphism and real-time state synchronization.",
+    features: ["React 18 Concurrent Mode", "Tailwind CSS Design System", "Framer Motion Animations", "Lucide Icon Suite"],
+    specs: { "Core": "Vite / React", "Styling": "PostCSS / Tailwind", "State": "React Context / Hooks", "Performance": "98+ Lighthouse" }
+  },
+  {
+    category: "Computer Vision",
+    icon: Eye,
+    description: "Advanced facial analysis and gesture recognition running directly in the browser.",
+    features: ["FACS (Facial Action Coding System)", "MediaPipe Face Mesh", "Micro-expression Detection", "Posture Alignment Tracking"],
+    specs: { "Inference": "GPU Accelerated", "Latency": "< 30ms", "Markers": "468 3D Points", "Accuracy": "94.2%" }
+  },
+  {
+    category: "Audio & Speech",
+    icon: Mic,
+    description: "Low-latency transcription and vocal characteristics analysis for delivery coaching.",
+    features: ["Web Speech API Integration", "Filler Word Detection (NLP)", "Pacing & Clarity Analysis", "Sentiment Tone Analysis"],
+    specs: { "Sample Rate": "44.1kHz", "Latency": "< 100ms", "Word Error Rate": "4.5%", "Language": "Multi-lingual" }
+  },
+  {
+    category: "AI & NLP Core",
+    icon: Brain,
+    description: "State-of-the-art inference engine for specialized interview question generation and reporting.",
+    features: ["Groq Llama-3 70B Model", "NER-KE Proprietary Algorithm", "Zero-Hallucination Guardrails", "Context-Aware Reasoning"],
+    specs: { "API": "Groq Cloud", "Speed": "300 tokens/sec", "Architecture": "Transformer V2", "Logic": "Few-shot Prompting" }
+  },
+  {
+    category: "Backend & Infrastructure",
+    icon: Database,
+    description: "Secure, scalable cloud services for data persistence and authentication.",
+    features: ["Firebase Firestore NoSQL", "Supabase Client Integration", "Real-time Database Sync", "Edge Function Capability"],
+    specs: { "DB": "Firestore", "Auth": "Firebase/Supabase", "Hosting": "Vercel Edge", "Availability": "99.99%" }
+  }
+];
+
 const techStack = [
   { name: "Groq AI", usage: "Llama-3 Reasoning Core", color: "text-orange-400" },
   { name: "MediaPipe", usage: "Real-time Vision Modeling", color: "text-emerald-400" },
@@ -98,6 +167,8 @@ const Index = () => {
             <span className="text-xl font-bold">HAMII</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
+            <a href="#flowchart" className="hover:text-foreground transition-colors">Flowchart</a>
+            <a href="#technology" className="hover:text-foreground transition-colors">Technology</a>
             <a href="#algorithms" className="hover:text-foreground transition-colors">Algorithms</a>
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
             <Link to="/interview">
@@ -222,7 +293,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Tech Stack Horizontal Scroll/Grid */}
+      {/* Tech Stack Horizontal Scroll/Grid (Existing) */}
       <section className="py-20 border-y border-border/50 bg-secondary/20">
         <div className="container mx-auto px-6">
           <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-70 grayscale hover:grayscale-0 transition-all">
@@ -230,6 +301,144 @@ const Index = () => {
               <div key={tech.name} className="text-center group">
                 <div className={`text-sm font-bold tracking-tight uppercase ${tech.color} mb-1 group-hover:scale-110 transition-transform`}>{tech.name}</div>
                 <div className="text-[10px] text-muted-foreground">{tech.usage}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* System Flowchart Section (Inspired by resumebasedinterview) */}
+      <section id="flowchart" className="py-24 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-primary/5 blur-[150px]" />
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+              Processing <span className="text-gradient-primary">Architecture</span>
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              The end-to-end pipeline that transforms your resume into a personalized coaching session
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card/50 backdrop-blur-xl p-8 md:p-12 glow-border max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                  <Layout className="h-6 w-6 text-primary" />
+                  System Logic
+                </h3>
+                <p className="text-muted-foreground mb-8 leading-relaxed">
+                  Our architecture is built on a <span className="text-foreground font-semibold">multi-modal synchronization layer</span> that coordinates between vision, audio, and large language models in real-time. This ensures that every feedback point is contextually grounded in both your resume and your live performance.
+                </p>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-secondary/30 border border-border/50">
+                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                    <span className="text-sm font-medium">Real-time Stream Coordination</span>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 rounded-xl bg-secondary/30 border border-border/50">
+                    <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+                    <span className="text-sm font-medium">Contextual Semantic Mapping</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative">
+                <h4 className="text-sm font-semibold text-primary mb-6 font-mono tracking-widest uppercase">// Pipeline Steps</h4>
+                <div className="space-y-0 relative">
+                  {flowchartSteps.map((step, idx) => (
+                    <div key={step.id} className="relative group">
+                      {idx !== flowchartSteps.length - 1 && (
+                        <div className="absolute left-[19px] top-10 w-[2px] h-[calc(100%-20px)] bg-gradient-to-b from-primary/50 to-transparent z-0" />
+                      )}
+                      <div className="flex gap-6 pb-10 last:pb-0">
+                        <div className="relative z-10 flex-shrink-0 w-10 h-10 rounded-full bg-background border-2 border-primary/50 flex items-center justify-center text-primary font-bold shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)] group-hover:scale-110 transition-transform">
+                          {step.id}
+                        </div>
+                        <div className="pt-1">
+                          <h5 className="font-bold flex items-center gap-2">
+                            {step.title}
+                            <step.icon className="h-3.5 w-3.5 text-muted-foreground" />
+                          </h5>
+                          <p className="text-sm text-muted-foreground mt-1 mb-2">{step.desc}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {step.techs.map(t => (
+                              <span key={t} className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/5 border border-primary/20 text-primary/70">
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Detailed Tech Stack Section (Inspired by persona-ai-live) */}
+      <section id="technology" className="py-24 bg-secondary/10">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+              Advanced <span className="text-gradient-accent">Technology Stack</span>
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              A comprehensive breakdown of the cutting-edge tools powering our platform
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8">
+            {detailedTechStack.map((domain) => (
+              <div key={domain.category} className="rounded-2xl border border-border bg-card p-8 hover:glow-border transition-all duration-300">
+                <div className="flex flex-col md:flex-row gap-8">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        <domain.icon className="h-6 w-6" />
+                      </div>
+                      <h3 className="text-xl font-bold">{domain.category}</h3>
+                    </div>
+                    <p className="text-muted-foreground text-sm mb-6 leading-relaxed italic">"{domain.description}"</p>
+
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Key Capabilities</h4>
+                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {domain.features.map(f => (
+                          <li key={f} className="flex items-center gap-2 text-xs">
+                            <CheckCircle className="h-3 w-3 text-emerald-500" />
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="flex-1">
+                    <div className="h-full rounded-xl bg-secondary/50 border border-border/50 p-6 flex flex-col">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-primary mb-4 font-mono">// Technical Specs</h4>
+                      <div className="space-y-4 flex-1">
+                        {Object.entries(domain.specs).map(([key, val]) => (
+                          <div key={key} className="flex justify-between items-center border-b border-border/30 pb-2">
+                            <span className="text-xs text-muted-foreground">{key}</span>
+                            <span className="text-xs font-mono font-bold">{val}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-6 pt-4 border-t border-border/30">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-muted-foreground">System Status</span>
+                          <span className="text-[10px] text-emerald-500 font-bold flex items-center gap-1">
+                            Operational
+                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
