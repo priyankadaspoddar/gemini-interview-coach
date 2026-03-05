@@ -1,4 +1,4 @@
-import { FileText, Brain, Eye, Mic, ArrowRight, Upload, Sparkles, Shield, Zap, BookOpen, Layout, Database, CheckCircle } from "lucide-react";
+import { FileText, Brain, Eye, Mic, ArrowRight, Upload, Sparkles, Shield, Zap, BookOpen, Layout, Database, CheckCircle, GitBranch, BarChart2, FileOutput, UserCheck, Cpu, Settings2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -100,7 +100,32 @@ const flowchartSteps = [
   }
 ];
 
+const userJourneySteps = [
+  { id: 1, title: "Land & Authenticate", desc: "User visits the platform. Optional sign-in to unlock history & PDF reports.", icon: UserCheck, color: "primary", techs: ["Firebase Auth", "React Router", "Session Storage"] },
+  { id: 2, title: "Upload Resume", desc: "Drag-and-drop or browse for PDF/text. Instant client-side OCR extraction.", icon: Upload, color: "accent", techs: ["PDF.js", "pdfjs-dist", "File API"] },
+  { id: 3, title: "Configure Session", desc: "Choose interview type (Technical/HR), difficulty level, and question count.", icon: Settings2, color: "primary", techs: ["React State", "Zod Schema", "LocalStorage"] },
+  { id: 4, title: "Live Practice", desc: "Answer questions with live video & voice capture. AI monitors in real-time.", icon: Cpu, color: "accent", techs: ["MediaPipe", "Web Speech API", "WebRTC"] },
+  { id: 5, title: "Receive Report", desc: "Instant comprehensive analytics, skill-alignment scores, and PDF download.", icon: FileOutput, color: "primary", techs: ["jsPDF", "Recharts", "Firebase Firestore"] },
+];
+
+const aiDecisionSteps = [
+  { id: 1, title: "Context Seeding", desc: "Feed parsed resume entities into a structured prompt template with zero-hallucination rules.", icon: Brain, color: "primary", techs: ["Groq Cloud", "Prompt Engineering", "JSON Schema"] },
+  { id: 2, title: "Source Validation", desc: "Cross-check every generated question against source entities to prevent fabrication.", icon: CheckCircle, color: "accent", techs: ["Regex Matching", "Entity Index", "Confidence Score"] },
+  { id: 3, title: "Difficulty Routing", desc: "Route questions to Easy / Medium / Hard buckets based on the user configured difficulty.", icon: GitBranch, color: "primary", techs: ["Llama-3 Inference", "Routing Logic", "Fallback Rules"] },
+  { id: 4, title: "Adaptive Re-ranking", desc: "Re-order questions based on confidence trends detected mid-session from voice & video.", icon: BarChart2, color: "accent", techs: ["FACS Scores", "Voice Analytics", "Priority Queue"] },
+  { id: 5, title: "Final Verdict", desc: "Generate recruiter shortlist verdict (Yes/No/Maybe) with actionable reasoning.", icon: Sparkles, color: "primary", techs: ["Groq Llama-3", "Chain-of-Thought", "Structured Output"] },
+];
+
+const reportPipelineSteps = [
+  { id: 1, title: "Data Aggregation", desc: "Collect all voice transcripts, FACS scores, and question-response pairs at session end.", icon: Database, color: "primary", techs: ["React Context", "Session Buffer", "Firestore"] },
+  { id: 2, title: "Skill Alignment", desc: "Map spoken keywords against resume entities. Calculate match % and identify skill gaps.", icon: GitBranch, color: "accent", techs: ["NER-KE v2.0", "Token Matching", "Gap Analysis"] },
+  { id: 3, title: "Multimodal Scoring", desc: "Combine FACS facial scores and voice clarity scores into a composite performance index.", icon: BarChart2, color: "primary", techs: ["Weighted Avg", "FACS Classifier", "Voice Analytics"] },
+  { id: 4, title: "Narrative Generation", desc: "Groq Llama-3 synthesizes scores into human-readable improvement suggestions.", icon: Sparkles, color: "accent", techs: ["Groq Cloud", "Report Template", "Llama-3 70B"] },
+  { id: 5, title: "PDF Export", desc: "Render typeset professional report as PDF with charts, scores, and recruiter verdict.", icon: FileOutput, color: "primary", techs: ["jsPDF", "Canvas Renderer", "Blob Download"] },
+];
+
 const detailedTechStack = [
+
   {
     category: "Frontend & UI/UX",
     icon: Layout,
@@ -378,7 +403,143 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Detailed Tech Stack Section (Inspired by persona-ai-live) */}
+      {/* User Journey Flowchart */}
+      <section id="user-journey" className="py-24 bg-secondary/10 relative">
+        <div className="absolute inset-0 bg-grid opacity-20" />
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+              User <span className="text-gradient-accent">Journey</span>
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              From landing on the platform to receiving your personalized coaching report
+            </p>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-stretch justify-center gap-0 max-w-5xl mx-auto">
+            {userJourneySteps.map((step, idx) => (
+              <div key={step.id} className="flex flex-col md:flex-row items-center flex-1">
+                <div className="flex-1 group">
+                  <div className={`rounded-2xl border bg-card p-6 hover:glow-border transition-all duration-300 h-full flex flex-col`}>
+                    <div className={`h-10 w-10 rounded-xl mb-4 flex items-center justify-center text-white text-sm font-bold ${step.color === 'accent' ? 'bg-accent/80' : 'bg-primary/80'
+                      }`}>
+                      {step.id}
+                    </div>
+                    <step.icon className="h-5 w-5 text-muted-foreground mb-3" />
+                    <h4 className="font-bold text-sm mb-2">{step.title}</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed flex-1">{step.desc}</p>
+                    <div className="flex flex-wrap gap-1.5 mt-4">
+                      {step.techs.map(t => (
+                        <span key={t} className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-secondary border border-border text-muted-foreground">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                {idx < userJourneySteps.length - 1 && (
+                  <div className="flex md:flex-row flex-col items-center justify-center px-2 py-4 md:py-0">
+                    <ArrowRight className="h-5 w-5 text-primary/50 rotate-90 md:rotate-0" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* AI Decision Engine Flowchart */}
+      <section id="ai-decision" className="py-24 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-accent/5 blur-[150px]" />
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+              AI <span className="text-gradient-primary">Decision Engine</span>
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              How Groq Llama-3 generates context-aware, zero-hallucination interview questions
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto rounded-2xl border border-border bg-card/50 backdrop-blur-xl p-8 md:p-12 glow-border">
+            <div className="relative">
+              {aiDecisionSteps.map((step, idx) => (
+                <div key={step.id} className="flex gap-6 mb-10 last:mb-0 group relative">
+                  {idx !== aiDecisionSteps.length - 1 && (
+                    <div className="absolute left-[19px] top-10 w-[2px] bottom-[-10px] bg-gradient-to-b from-primary/60 via-accent/30 to-transparent" />
+                  )}
+                  <div className={`relative z-10 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 shadow-[0_0_20px] transition-transform group-hover:scale-110 ${step.color === 'accent'
+                    ? 'border-accent/60 text-accent shadow-accent/20 bg-background'
+                    : 'border-primary/60 text-primary shadow-primary/20 bg-background'
+                    }`}>
+                    {step.id}
+                  </div>
+                  <div className="flex-1 pt-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <step.icon className={`h-4 w-4 ${step.color === 'accent' ? 'text-accent' : 'text-primary'}`} />
+                      <h4 className="font-bold">{step.title}</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{step.desc}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {step.techs.map(t => (
+                        <span key={t} className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border ${step.color === 'accent'
+                          ? 'bg-accent/5 border-accent/20 text-accent/70'
+                          : 'bg-primary/5 border-primary/20 text-primary/70'
+                          }`}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Report Generation Pipeline Flowchart */}
+      <section id="report-pipeline" className="py-24 bg-secondary/10 relative">
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-primary/5 blur-[150px]" />
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+              Report <span className="text-gradient-accent">Generation Pipeline</span>
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              How raw session data is synthesized into a professional recruiter-ready PDF report
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-5 gap-4 max-w-6xl mx-auto">
+            {reportPipelineSteps.map((step, idx) => (
+              <div key={step.id} className="flex md:flex-col items-stretch gap-4 md:gap-0">
+                <div className="flex-1 rounded-2xl border border-border bg-card p-6 hover:glow-border transition-all duration-300 group flex flex-col">
+                  <div className="flex md:flex-col items-center md:items-start gap-4 mb-4">
+                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${step.color === 'accent' ? 'bg-accent/10 text-accent' : 'bg-primary/10 text-primary'
+                      }`}>
+                      <step.icon className="h-5 w-5" />
+                    </div>
+                    <div className={`hidden md:flex h-1 w-full rounded-full mt-4 ${step.color === 'accent' ? 'bg-gradient-to-r from-accent/50 to-transparent' : 'bg-gradient-to-r from-primary/50 to-transparent'
+                      }`} />
+                  </div>
+                  <span className={`text-xs font-bold uppercase tracking-wider mb-2 ${step.color === 'accent' ? 'text-accent' : 'text-primary'
+                    }`}>Step {step.id}</span>
+                  <h4 className="font-bold text-sm mb-2">{step.title}</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed flex-1">{step.desc}</p>
+                  <div className="flex flex-wrap gap-1.5 mt-4">
+                    {step.techs.map(t => (
+                      <span key={t} className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-secondary border border-border text-muted-foreground">{t}</span>
+                    ))}
+                  </div>
+                </div>
+                {idx < reportPipelineSteps.length - 1 && (
+                  <div className="hidden md:flex items-start pt-10">
+                    <ArrowRight className="h-4 w-4 text-primary/30 -ml-2 -mr-2 relative z-10" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section id="technology" className="py-24 bg-secondary/10">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
