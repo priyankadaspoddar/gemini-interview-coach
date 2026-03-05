@@ -183,6 +183,8 @@ const features = [
 ];
 
 const Index = () => {
+  const { user, signOut } = useAuth();
+
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
@@ -197,11 +199,24 @@ const Index = () => {
             <a href="#technology" className="hover:text-foreground transition-colors">Technology</a>
             <a href="#algorithms" className="hover:text-foreground transition-colors">Algorithms</a>
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
-            <Link to="/interview">
-              <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                Start Interview
-              </Button>
-            </Link>
+            {user ? (
+              <>
+                <Link to="/interview">
+                  <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    Start Interview
+                  </Button>
+                </Link>
+                <Button size="sm" variant="ghost" onClick={signOut}>
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Link to="/auth">
+                <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  Sign In
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </nav>
