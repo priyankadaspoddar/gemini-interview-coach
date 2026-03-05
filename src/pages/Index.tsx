@@ -2,6 +2,7 @@ import { FileText, Brain, Eye, Mic, ArrowRight, Upload, Sparkles, Shield, Zap, B
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const stats = [
   { value: "95%+", label: "Recognition Accuracy" },
