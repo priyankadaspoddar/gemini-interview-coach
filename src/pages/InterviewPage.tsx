@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Upload, FileText, Loader2, ArrowLeft, Video, Mic, MicOff, Camera, CameraOff, ChevronRight, Eye, BarChart3, Activity, Brain, Target, AlertTriangle, CheckCircle2, TrendingUp, SkipForward, Download, Users, Send, MessageCircle, BookOpen, Database } from "lucide-react";
+import { Upload, FileText, Loader2, ArrowLeft, Video, Mic, MicOff, Camera, CameraOff, ChevronRight, Eye, BarChart3, Activity, Brain, Target, AlertTriangle, CheckCircle2, TrendingUp, SkipForward, Download, Users, Send, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -14,8 +14,6 @@ import {
   chatWithReport,
 } from "@/lib/aiClient";
 import { downloadReportPdf } from "@/lib/generateReportPdf";
-import { storageService, StoredReport } from "@/lib/storageService";
-import { HistoryView } from "@/components/HistoryView";
 
 interface Question {
   id: number;
@@ -41,13 +39,9 @@ interface AnalysisResult {
   topStrengths?: string[];
   topImprovements?: string[];
   algorithmNotes?: { facsUnitsDetected?: string; emaSmoothingApplied?: boolean; mediaPipeConfidence?: string; voicePatternType?: string };
-  questionBreakdown?: { questionNumber: number; userAnswer: string; idealAnswer: string; score: number; feedback: string }[];
-  metadata?: { avgResponseLength: number; fillerWordCount: number; confidenceScore: number };
-  resumeAlignment?: { skillsInResume: string[]; skillsDemonstrated: string[]; alignmentPercentage: number };
-  recruiterView?: { shortlist: boolean; hireRecommendation: string; suitableRoles: string[] };
 }
 
-type Step = "upload" | "questions" | "resume-tips" | "practice" | "hr-questions" | "hr-tips" | "hr-practice" | "results";
+type Step = "upload" | "questions" | "practice" | "hr-questions" | "hr-practice" | "results";
 
 const difficultyColors: Record<string, string> = {
   Easy: "bg-emerald-500/20 text-emerald-400",
@@ -68,10 +62,6 @@ const InterviewPage = () => {
   const [transcript, setTranscript] = useState("");
   const [cameraOn, setCameraOn] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState("");
-  const [candidateName, setCandidateName] = useState("");
-  const [interviewStartTime, setInterviewStartTime] = useState<number | null>(null);
-  const [interviewDuration, setInterviewDuration] = useState<string>("0m");
-  const [showHistory, setShowHistory] = useState(false);
 
   // Per-question data collection
   const [questionTranscripts, setQuestionTranscripts] = useState<string[]>([]);
@@ -190,8 +180,8 @@ const InterviewPage = () => {
       const name = err?.name || "";
       const desc = name === "NotAllowedError" ? "Please allow camera access in browser settings"
         : name === "NotFoundError" ? "No camera detected"
-          : name === "NotReadableError" ? "Camera in use by another app"
-            : `Could not access camera: ${err?.message || "unknown"}`;
+        : name === "NotReadableError" ? "Camera in use by another app"
+        : `Could not access camera: ${err?.message || "unknown"}`;
       toast({ title: "Camera Error", description: desc, variant: "destructive" });
     }
   }, [toast]);
@@ -214,7 +204,6 @@ const InterviewPage = () => {
   useEffect(() => {
     if (step === "practice" || step === "hr-practice") {
       if (!cameraOn) startCamera();
-      if (!interviewStartTime) setInterviewStartTime(Date.now());
     }
   }, [step]);
 
@@ -253,20 +242,9 @@ const InterviewPage = () => {
   const goToNextQuestion = () => {
     saveCurrentQuestionData();
     if (currentQ < activeQuestions.length - 1) {
-      // Robustly clear transcript and reset recognition
-      if (isRecording) {
-        recognitionRef.current?.stop();
-        setTimeout(() => {
-          setTranscript("");
-          setCurrentQ(prev => prev + 1);
-          resetHistory();
-          recognitionRef.current?.start();
-        }, 300);
-      } else {
-        setTranscript("");
-        setCurrentQ(prev => prev + 1);
-        resetHistory();
-      }
+      setCurrentQ(prev => prev + 1);
+      setTranscript("");
+      resetHistory();
     }
   };
 
@@ -298,36 +276,11 @@ const InterviewPage = () => {
         finalTranscripts,
         finalScores,
         allQuestions,
-        resumeText,
         apiKeyInput || undefined
       );
-
-      // Calculate final duration
-      if (interviewStartTime) {
-        const diff = Math.floor((Date.now() - interviewStartTime) / 1000);
-        const mins = Math.floor(diff / 60);
-        const secs = diff % 60;
-        setInterviewDuration(`${mins}m ${secs}s`);
-      }
-
       setAnalysis(data as unknown as AnalysisResult);
       setChatMessages([]);
       setStep("results");
-
-      // Auto-save to local dataset
-      storageService.saveReport({
-        candidateName: candidateName || "Anonymous",
-        duration: interviewDuration,
-        overallScore: (data as any).overall,
-        shortlist: (data as any).recruiterView?.shortlist || false,
-        recommendation: (data as any).recruiterView?.hireRecommendation || "N/A",
-        suitableRoles: (data as any).recruiterView?.suitableRoles || [],
-        analysis: data,
-        questions: allQuestions,
-        resumeText: resumeText
-      });
-
-      toast({ title: "Report Saved", description: "This report has been added to your dataset." });
     } catch (err: any) {
       toast({ title: "Analysis Error", description: err?.message || "Failed to analyze", variant: "destructive" });
     } finally {
@@ -448,7 +401,7 @@ const InterviewPage = () => {
 
           {currentQ < qs.length - 1 ? (
             <Button variant="outline" onClick={goToNextQuestion} className="gap-2 border-border">
-              <span className="flex items-center gap-2"><Send className="h-4 w-4" /> Submit Answer & Next</span>
+              <SkipForward className="h-4 w-4" /> Next Question
             </Button>
           ) : (
             <Button onClick={onFinish} disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 ml-auto">
@@ -470,36 +423,6 @@ const InterviewPage = () => {
       </div>
     </div>
   );
-
-  if (showHistory) {
-    return (
-      <div className="min-h-screen bg-background">
-        <nav className="border-b border-border bg-background/80 backdrop-blur-xl">
-          <div className="container mx-auto flex h-14 items-center px-6 gap-4">
-            <button onClick={() => setShowHistory(false)} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="h-4 w-4" /> Back to App
-            </button>
-            <span className="text-sm font-mono text-muted-foreground">Dataset Explorer</span>
-          </div>
-        </nav>
-        <div className="container mx-auto px-6 py-10 max-w-5xl">
-          <HistoryView
-            onBack={() => setShowHistory(false)}
-            onViewReport={(r) => {
-              setAnalysis(r.analysis);
-              setQuestions(r.questions.slice(0, 5));
-              setHrQuestions(r.questions.slice(5));
-              setCandidateName(r.candidateName);
-              setInterviewDuration(r.duration);
-              setResumeText(r.resumeText);
-              setStep("results");
-              setShowHistory(false);
-            }}
-          />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -525,25 +448,13 @@ const InterviewPage = () => {
           <div className="space-y-6">
             <div>
               <h1 className="text-3xl font-bold mb-2">Upload Your Resume</h1>
-              <p className="text-muted-foreground flex justify-between items-center">
-                <span>Paste text or upload a <strong>.pdf</strong> / <strong>.txt</strong> file.</span>
-                <Button variant="ghost" size="sm" onClick={() => setShowHistory(true)} className="gap-2 text-primary hover:text-primary hover:bg-primary/10">
-                  <Database className="h-4 w-4" /> View Dataset
-                </Button>
-              </p>
+              <p className="text-muted-foreground">Paste text or upload a <strong>.pdf</strong> / <strong>.txt</strong> file.</p>
             </div>
-            <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2 flex items-center gap-2 text-primary">👤 Candidate Name</h3>
-                <input type="text" placeholder="Enter your full name" value={candidateName} onChange={(e) => setCandidateName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm bg-secondary/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2 flex items-center gap-2 text-primary">⚡ Groq API Key</h3>
-                <input type="password" placeholder="Paste your key from https://console.groq.com/keys" value={apiKeyInput} onChange={(e) => setApiKeyInput(e.target.value)}
-                  className="w-full px-3 py-2 text-sm bg-secondary/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
-                <p className="text-xs text-muted-foreground mt-1.5">Free key — used only in your browser. <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-primary underline">Get one here</a></p>
-              </div>
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-5">
+              <h3 className="font-semibold mb-2 flex items-center gap-2 text-primary">⚡ Groq API Key</h3>
+              <input type="password" placeholder="Paste your key from https://console.groq.com/keys" value={apiKeyInput} onChange={(e) => setApiKeyInput(e.target.value)}
+                className="w-full px-3 py-2 text-sm bg-secondary/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              <p className="text-xs text-muted-foreground mt-1.5">Free key — used only in your browser. <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="text-primary underline">Get one here</a></p>
             </div>
             <div className="rounded-xl border border-border bg-card p-6 space-y-4">
               <textarea value={resumeText} onChange={(e) => setResumeText(e.target.value)} placeholder="Paste your resume text here..."
@@ -576,34 +487,7 @@ const InterviewPage = () => {
         {step === "questions" && (
           <div>
             <QuestionList qs={questions} title="Resume-Based Questions" subtitle="Generated from your resume using NER-KE Algorithm v2.0" />
-            <Button onClick={() => setStep("resume-tips")} className="mt-6 bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
-              Next: Preparation Tips <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
-        {/* RESUME TIPS */}
-        {step === "resume-tips" && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">10 Tips for Resume-Based Interviews</h1>
-              <p className="text-muted-foreground">Review these tips before you start your practice session.</p>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-6 glow-border">
-              <ol className="space-y-4 text-sm text-muted-foreground list-decimal pl-5">
-                <li><strong className="text-foreground">Know Your Resume Inside Out:</strong> Be prepared to discuss any detail you've included.</li>
-                <li><strong className="text-foreground">Quantify Your Achievements:</strong> Use metrics and numbers to demonstrate impact whenever possible.</li>
-                <li><strong className="text-foreground">Be Honest About Your Skills:</strong> If you don't know something, admit it and explain how you'd learn.</li>
-                <li><strong className="text-foreground">Connect Experience to the Role:</strong> Always tie your past work to what typical employers look for.</li>
-                <li><strong className="text-foreground">Keep Answers Concise:</strong> Aim for 1-2 minutes per question to keep the interviewer engaged.</li>
-                <li><strong className="text-foreground">Highlight Problem-Solving:</strong> Focus on how you approached difficult technical or business problems.</li>
-                <li><strong className="text-foreground">Showcase Collaboration:</strong> Mention how you worked with teams, not just your solitary contributions.</li>
-                <li><strong className="text-foreground">Speak Clearly and Pace Yourself:</strong> Don't rush. Make sure your microphone captures your voice clearly.</li>
-                <li><strong className="text-foreground">Maintain Eye Contact:</strong> Look at the camera (not the screen) to simulate direct eye contact.</li>
-                <li><strong className="text-foreground">Submit Your Answer Audibly:</strong> Ensure you finish your thought completely before clicking submit.</li>
-              </ol>
-            </div>
-            <Button onClick={() => { setCurrentQ(0); setTranscript(""); resetHistory(); setStep("practice"); }} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
+            <Button onClick={() => { setCurrentQ(0); setTranscript(""); resetHistory(); setStep("practice"); }} className="mt-6 bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
               <Video className="h-4 w-4" /> Start Resume Practice <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -621,46 +505,7 @@ const InterviewPage = () => {
         {step === "hr-questions" && (
           <div>
             <QuestionList qs={hrQuestions} title="HR Interview Questions" subtitle="Behavioral & technical HR questions" />
-            <Button onClick={() => setStep("hr-tips")} className="mt-6 bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
-              Next: The STAR Method <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
-        {/* HR TIPS */}
-        {step === "hr-tips" && (
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Master the STAR Method</h1>
-              <p className="text-muted-foreground">The best framework for answering behavioral and situational questions.</p>
-            </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="rounded-xl border border-primary/30 bg-primary/5 p-5">
-                <div className="text-2xl font-bold text-primary mb-2">S</div>
-                <h3 className="font-semibold text-foreground mb-1">Situation</h3>
-                <p className="text-xs text-muted-foreground">Set the scene and give the necessary details of your example.</p>
-              </div>
-              <div className="rounded-xl border border-accent/30 bg-accent/5 p-5">
-                <div className="text-2xl font-bold text-accent mb-2">T</div>
-                <h3 className="font-semibold text-foreground mb-1">Task</h3>
-                <p className="text-xs text-muted-foreground">Describe what your responsibility was in that situation.</p>
-              </div>
-              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-5">
-                <div className="text-2xl font-bold text-emerald-500 mb-2">A</div>
-                <h3 className="font-semibold text-foreground mb-1">Action</h3>
-                <p className="text-xs text-muted-foreground">Explain exactly what steps you took to address it.</p>
-              </div>
-              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-5">
-                <div className="text-2xl font-bold text-amber-500 mb-2">R</div>
-                <h3 className="font-semibold text-foreground mb-1">Result</h3>
-                <p className="text-xs text-muted-foreground">Share what outcomes your actions achieved (use metrics!).</p>
-              </div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-6 text-sm text-muted-foreground">
-              <strong>Tip:</strong> Spend 20% of your time on Situation/Task, 60% on Action, and 20% on Result.
-              The interviewer wants to hear about what <em>you</em> specifically did.
-            </div>
-            <Button onClick={() => { setCurrentQ(0); setTranscript(""); resetHistory(); setStep("hr-practice"); }} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
+            <Button onClick={() => { setCurrentQ(0); setTranscript(""); resetHistory(); setStep("hr-practice"); }} className="mt-6 bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
               <Video className="h-4 w-4" /> Start HR Practice <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -682,104 +527,18 @@ const InterviewPage = () => {
               <p className="text-muted-foreground">Comprehensive AI analysis of all 10 questions</p>
             </div>
 
-            {/* Candidate Profile Info */}
-            <div className="rounded-xl border border-border bg-card p-6">
-              <h3 className="font-semibold mb-4 flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> Candidate Profile</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 text-sm">
-                <div><span className="text-muted-foreground block mb-1">Name</span><span className="font-medium">{candidateName || "Anonymous"}</span></div>
-                <div><span className="text-muted-foreground block mb-1">Interview Type</span><span className="font-medium">Full AI Mock (HR + Resume)</span></div>
-                <div><span className="text-muted-foreground block mb-1">Difficulty</span><span className="font-medium">Adaptive AI Range</span></div>
-                <div><span className="text-muted-foreground block mb-1">Duration</span><span className="font-medium">{interviewDuration}</span></div>
-                <div><span className="text-muted-foreground block mb-1">Date & Time</span><span className="font-medium">{new Date().toLocaleString()}</span></div>
-              </div>
-            </div>
-
             {/* Overall Score */}
             <div className="text-center py-8">
               <div className="inline-flex items-center justify-center w-28 h-28 rounded-full border-4 border-primary animate-pulse-glow">
                 <span className="text-4xl font-bold text-primary">{analysis.overall}</span>
               </div>
-              <p className="text-muted-foreground mt-2">Overall Performance Score</p>
+              <p className="text-muted-foreground mt-2">Overall Score</p>
             </div>
-
-            {/* Recruiter View Summary */}
-            {analysis.recruiterView && (
-              <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="font-bold flex items-center gap-2 text-lg"><Brain className="h-5 w-5" /> Recruiter Verdict</h3>
-                  <div className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm ${analysis.recruiterView.shortlist ? "bg-emerald-500 text-white" : "bg-red-500 text-white"}`}>
-                    {analysis.recruiterView.shortlist ? "SHORTLISTED" : "REJECTED"}
-                  </div>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="p-4 rounded-lg bg-card border border-border">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold">Hire Recommendation</span>
-                    <p className={`text-xl font-bold mt-1 ${analysis.recruiterView.hireRecommendation === 'Yes' ? 'text-emerald-500' : 'text-amber-500'}`}>{analysis.recruiterView.hireRecommendation}</p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-card border border-border">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold">Suitable Roles</span>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {analysis.recruiterView.suitableRoles.map((r, i) => (
-                        <span key={i} className="px-2 py-0.5 bg-secondary rounded text-xs text-foreground">{r}</span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {analysis.summary && (
               <div className="rounded-xl border border-border bg-card p-6">
-                <h3 className="font-semibold mb-3 flex items-center gap-2"><Target className="h-5 w-5 text-primary" /> Performance Summary</h3>
+                <h3 className="font-semibold mb-3 flex items-center gap-2"><Target className="h-5 w-5 text-primary" /> Summary</h3>
                 <p className="text-muted-foreground leading-relaxed">{analysis.summary}</p>
-              </div>
-            )}
-
-            {/* Interview Metadata Section */}
-            {analysis.metadata && (
-              <div className="rounded-xl border border-border bg-card p-6">
-                <h3 className="font-semibold mb-4 flex items-center gap-2"><Activity className="h-5 w-5 text-accent" /> Professional Delivery Metadata</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-                  <div>
-                    <span className="text-xs text-muted-foreground uppercase font-semibold">Speaking Pace</span>
-                    <p className="text-lg font-medium">{analysis.metadata.avgResponseLength} wpm (avg)</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground uppercase font-semibold">Filler Words</span>
-                    <p className="text-lg font-medium">{analysis.metadata.fillerWordCount} detected</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground uppercase font-semibold">Confidence Score</span>
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-emerald-500" />
-                      <p className="text-lg font-medium">{analysis.metadata.confidenceScore}%</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Resume Alignment Analys */}
-            {analysis.resumeAlignment && (
-              <div className="rounded-xl border border-border bg-card p-6">
-                <h3 className="font-semibold mb-4 flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-emerald-500" /> Resume Alignment & Skills Fit</h3>
-                <div className="space-y-4">
-                  <ScoreBar label="Job Market Alignment" value={analysis.resumeAlignment.alignmentPercentage} />
-                  <div className="grid sm:grid-cols-2 gap-4 mt-4">
-                    <div className="p-3 bg-secondary/30 rounded-lg">
-                      <h4 className="text-xs font-bold text-muted-foreground mb-2">Resume Keywords</h4>
-                      <div className="flex flex-wrap gap-1.5">
-                        {analysis.resumeAlignment.skillsInResume.map((s, i) => (<span key={i} className="px-2 py-0.5 bg-background border border-border rounded text-[10px]">{s}</span>))}
-                      </div>
-                    </div>
-                    <div className="p-3 bg-emerald-500/5 rounded-lg">
-                      <h4 className="text-xs font-bold text-emerald-600/70 mb-2">Demonstrated Skills</h4>
-                      <div className="flex flex-wrap gap-1.5">
-                        {analysis.resumeAlignment.skillsDemonstrated.map((s, i) => (<span key={i} className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded text-[10px] text-emerald-600">{s}</span>))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             )}
 
@@ -833,42 +592,6 @@ const InterviewPage = () => {
               </div>
             )}
 
-            {/* Per-Question Breakdown (Ideal Answers) */}
-            {analysis.questionBreakdown && analysis.questionBreakdown.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="font-semibold mb-4 flex items-center gap-2"><BookOpen className="h-5 w-5 text-primary" /> Detailed Answer Report</h3>
-                {analysis.questionBreakdown.map((q, i) => {
-                  const questionObj = [...questions, ...hrQuestions][i];
-                  return (
-                    <div key={i} className="rounded-xl border border-border bg-card p-6 group">
-                      <div className="flex justify-between items-start mb-4">
-                        <span className="text-xs text-primary font-mono font-bold bg-primary/10 px-2.5 py-1 rounded-md">Q{q.questionNumber || i + 1} Score: {q.score}%</span>
-                      </div>
-                      <p className="font-medium text-foreground mb-4">{questionObj?.question}</p>
-
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="rounded-lg bg-secondary/30 border border-border p-4">
-                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Your Answer Transcript</h4>
-                          <p className="text-sm text-foreground italic">"{q.userAnswer || "(No audible answer detected)"}"</p>
-                        </div>
-                        <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/20 p-4">
-                          <h4 className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2">Ideal Answer Approach</h4>
-                          <p className="text-sm text-foreground whitespace-pre-wrap">{q.idealAnswer}</p>
-                        </div>
-                      </div>
-
-                      {q.feedback && (
-                        <div className="mt-4 pt-4 border-t border-border text-sm text-muted-foreground flex gap-2">
-                          <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                          <span>{q.feedback}</span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
             {/* Interactive Chat */}
             <div className="rounded-xl border border-primary/30 bg-card p-6">
               <h3 className="font-semibold mb-4 flex items-center gap-2"><MessageCircle className="h-5 w-5 text-primary" /> Ask AI About Your Results</h3>
@@ -899,9 +622,6 @@ const InterviewPage = () => {
             <div className="flex gap-3 flex-wrap">
               <Button onClick={() => downloadReportPdf(analysis, [...questions, ...hrQuestions], resumeText)} className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
                 <Download className="h-4 w-4" /> Download PDF Report
-              </Button>
-              <Button variant="outline" onClick={() => setShowHistory(true)} className="border-border gap-2">
-                <Database className="h-4 w-4" /> View Full Dataset
               </Button>
               <Button variant="outline" onClick={() => { setStep("upload"); setQuestions([]); setHrQuestions([]); setAnalysis(null); setResumeText(""); setTranscript(""); setCurrentQ(0); setChatMessages([]); }} className="border-border gap-2">
                 New Resume
