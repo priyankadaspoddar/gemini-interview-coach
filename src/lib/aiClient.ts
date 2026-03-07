@@ -151,12 +151,12 @@ export async function analyzePresentationDirect(
     mediaPipeScores: allMediaPipeScores[i] || {},
   }));
 
-  const prompt = `Analyze this complete interview performance across ${questions.length} questions.
+  const prompt = `Analyze this complete interview performance across EXACTLY ${questions.length} questions.
   
   ===== RESUME CONTEXT =====
   ${resumeText}
   
-  ===== INTERVIEW DATA =====
+  ===== INTERVIEW DATA (${questions.length} questions total) =====
   ${JSON.stringify(questionsData, null, 2)}
   
   Return ONLY valid JSON: {
@@ -167,7 +167,7 @@ export async function analyzePresentationDirect(
     "summary": "comprehensive summary",
     "topStrengths": ["s1", "s2"],
     "topImprovements": ["i1", "i2"],
-    "questionBreakdown": [{"questionNumber":1,"userAnswer":"...","idealAnswer":"...","score":0,"feedback":"..."}],
+    "questionBreakdown": [EXACTLY ${questions.length} items, one per question: {"questionNumber":1,"userAnswer":"...","idealAnswer":"...","score":0,"feedback":"..."}],
     "metadata": {
       "avgResponseLength": 0,
        "fillerWordCount": 0,
@@ -185,12 +185,13 @@ export async function analyzePresentationDirect(
     }
   }
   
-  Instructions:
-  1. Analyze transcripts for filler words (um, uh, like, so, basically).
-  2. Compare "Skills in Resume" (from resume text) with "Skills Demonstrated" (from transcripts).
-  3. Determine if the candidate should be shortlisted and their suitability for roles like ML Intern, AI Research, SDE, Professor, etc.
-  4. Provide a detailed "idealAnswer" for each question as a perfect STAR-method example.
-  5. Scores are 0-100. Be intelligent, insightful, and official.`;
+  CRITICAL RULES:
+  1. The "questionBreakdown" array MUST have EXACTLY ${questions.length} entries — one for each question, numbered 1 through ${questions.length}. Do NOT skip or merge any questions.
+  2. Analyze transcripts for filler words (um, uh, like, so, basically).
+  3. Compare "Skills in Resume" (from resume text) with "Skills Demonstrated" (from transcripts).
+  4. Determine if the candidate should be shortlisted and their suitability for roles.
+  5. Provide a detailed "idealAnswer" for each question as a perfect STAR-method example.
+  6. Scores are 0-100. Be intelligent, insightful, and official.`;
 
   const text = await callGroq(key, [
     { role: "system", content: "You are an expert recruiter and interview coach. Return comprehensive analysis in strict JSON format." },
