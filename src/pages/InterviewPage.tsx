@@ -77,6 +77,13 @@ const InterviewPage = () => {
   const [questionTranscripts, setQuestionTranscripts] = useState<string[]>([]);
   const [questionScores, setQuestionScores] = useState<Record<string, number>[]>([]);
 
+  // Per-question typed answers
+  const [typedAnswer, setTypedAnswer] = useState("");
+  const [questionTypedAnswers, setQuestionTypedAnswers] = useState<string[]>([]);
+
+  // TTS state
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
   // Interactive chat
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([]);
   const [chatInput, setChatInput] = useState("");
