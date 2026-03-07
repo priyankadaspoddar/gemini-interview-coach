@@ -314,9 +314,11 @@ const InterviewPage = () => {
 
   const finishResumeRound = async () => {
     saveCurrentQuestionData();
+    window.speechSynthesis?.cancel();
     stopCamera();
     recognitionRef.current?.stop();
     setIsRecording(false);
+    setTypedAnswer("");
     await generateHRQuestions();
   };
 
