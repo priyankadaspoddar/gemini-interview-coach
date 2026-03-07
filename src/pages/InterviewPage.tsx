@@ -264,20 +264,48 @@ const InterviewPage = () => {
     }
   };
 
+  // TTS: speak question aloud
+  const speakQuestion = useCallback((text: string) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      // Try to pick a professional-sounding voice
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find(v => /google.*us|samantha|daniel|karen|english/i.test(v.name)) || voices.find(v => v.lang.startsWith('en'));
+      if (preferred) utterance.voice = preferred;
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+      window.speechSynthesis.speak(utterance);
+    }
+  }, []);
+
+  // Auto-speak question when it changes during practice
+  useEffect(() => {
+    if ((step === "practice" || step === "hr-practice") && activeQuestions[currentQ]) {
+      speakQuestion(activeQuestions[currentQ].question);
+    }
+    return () => { window.speechSynthesis?.cancel(); };
+  }, [currentQ, step]);
+
   const goToNextQuestion = () => {
     saveCurrentQuestionData();
     if (currentQ < activeQuestions.length - 1) {
-      // Robustly clear transcript and reset recognition
       if (isRecording) {
         recognitionRef.current?.stop();
         setTimeout(() => {
           setTranscript("");
+          setTypedAnswer("");
           setCurrentQ(prev => prev + 1);
           resetHistory();
           recognitionRef.current?.start();
         }, 300);
       } else {
         setTranscript("");
+        setTypedAnswer("");
         setCurrentQ(prev => prev + 1);
         resetHistory();
       }
