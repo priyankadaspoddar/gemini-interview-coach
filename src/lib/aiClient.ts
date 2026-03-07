@@ -111,15 +111,23 @@ export async function generateHRQuestionsDirect(
 ): Promise<unknown[]> {
   const key = getKey(apiKeyOverride);
   const randomSeed = Math.random().toString(36).substring(7);
-  const prompt = `You are a senior HR interviewer. Based on the candidate's resume, generate ${numberOfQuestions} HR interview questions.
-  Randomness Seed: ${randomSeed}. Ensure variety in behavioral, situational, and technical HR categories.
+  const prompt = `You are a senior HR interviewer conducting a ROLE-SPECIFIC HR interview. First, analyze the resume to identify the candidate's professional background (e.g., Professor, Software Engineer, Marketing Manager, Data Scientist, etc.).
+
+  Then generate ${numberOfQuestions} HR interview questions that are SPECIFICALLY TAILORED to that professional role and industry.
+
+  For example:
+  - If the candidate is a Professor: ask about teaching philosophy, student mentorship, research funding, academic collaboration, publish-or-perish pressure, curriculum development.
+  - If the candidate is an Engineer: ask about technical leadership, code review culture, sprint planning, handling production incidents.
+  - If the candidate is a Manager: ask about team building, performance reviews, conflict between reports, strategic planning.
+
+  Randomness Seed: ${randomSeed}. Ensure variety across these categories:
+  - Behavioral (role-specific teamwork, conflict resolution, leadership scenarios)
+  - Technical HR (career trajectory in their field, domain-specific strengths/weaknesses, culture fit)
+  - Situational (hypothetical workplace scenarios relevant to their industry)
+
+  CRITICAL: Questions MUST reference the candidate's actual job titles, industry, and experience level from the resume. Do NOT ask generic HR questions.
+
   Return ONLY a JSON object with a "questions" array.
-  
-  Mix these categories equally:
-  - Behavioral (teamwork, conflict resolution, leadership, adaptability)
-  - Technical HR (work style, career goals, strengths/weaknesses, culture fit)
-  - Situational (hypothetical workplace scenarios)
-  
   Format: {"questions": [{"id":1,"question":"...","category":"Behavioral","difficulty":"Medium","relatedSkill":"Teamwork","expectedKeyPoints":["..."]}]}
   
   ===== RESUME =====

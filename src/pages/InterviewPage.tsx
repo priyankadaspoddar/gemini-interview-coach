@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Upload, FileText, Loader2, ArrowLeft, Video, Mic, MicOff, Camera, CameraOff, ChevronRight, Eye, BarChart3, Activity, Brain, Target, AlertTriangle, CheckCircle2, TrendingUp, SkipForward, Download, Users, Send, MessageCircle, BookOpen, Database } from "lucide-react";
+import { Upload, FileText, Loader2, ArrowLeft, Video, Mic, MicOff, Camera, CameraOff, ChevronRight, Eye, BarChart3, Activity, Brain, Target, AlertTriangle, CheckCircle2, TrendingUp, SkipForward, Download, Users, Send, MessageCircle, BookOpen, Database, Volume2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -77,6 +77,13 @@ const InterviewPage = () => {
   const [questionTranscripts, setQuestionTranscripts] = useState<string[]>([]);
   const [questionScores, setQuestionScores] = useState<Record<string, number>[]>([]);
 
+  // Per-question typed answers
+  const [typedAnswer, setTypedAnswer] = useState("");
+  const [questionTypedAnswers, setQuestionTypedAnswers] = useState<string[]>([]);
+
+  // TTS state
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
   // Interactive chat
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([]);
   const [chatInput, setChatInput] = useState("");
@@ -97,9 +104,11 @@ const InterviewPage = () => {
   const saveCurrentQuestionData = useCallback(() => {
     const idx = isHrPhase ? questions.length + currentQ : currentQ;
     const avgScores = getAverageScores() as unknown as Record<string, number>;
+    // Combine voice transcript and typed answer
+    const combinedAnswer = [transcript, typedAnswer].filter(Boolean).join(" | Typed: ");
     setQuestionTranscripts(prev => {
       const copy = [...prev];
-      copy[idx] = transcript;
+      copy[idx] = combinedAnswer;
       return copy;
     });
     setQuestionScores(prev => {
@@ -107,7 +116,12 @@ const InterviewPage = () => {
       copy[idx] = { ...avgScores };
       return copy;
     });
-  }, [currentQ, transcript, getAverageScores, isHrPhase, questions.length]);
+    setQuestionTypedAnswers(prev => {
+      const copy = [...prev];
+      copy[idx] = typedAnswer;
+      return copy;
+    });
+  }, [currentQ, transcript, typedAnswer, getAverageScores, isHrPhase, questions.length]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -250,20 +264,48 @@ const InterviewPage = () => {
     }
   };
 
+  // TTS: speak question aloud
+  const speakQuestion = useCallback((text: string) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      // Try to pick a professional-sounding voice
+      const voices = window.speechSynthesis.getVoices();
+      const preferred = voices.find(v => /google.*us|samantha|daniel|karen|english/i.test(v.name)) || voices.find(v => v.lang.startsWith('en'));
+      if (preferred) utterance.voice = preferred;
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+      window.speechSynthesis.speak(utterance);
+    }
+  }, []);
+
+  // Auto-speak question when it changes during practice
+  useEffect(() => {
+    if ((step === "practice" || step === "hr-practice") && activeQuestions[currentQ]) {
+      speakQuestion(activeQuestions[currentQ].question);
+    }
+    return () => { window.speechSynthesis?.cancel(); };
+  }, [currentQ, step]);
+
   const goToNextQuestion = () => {
     saveCurrentQuestionData();
     if (currentQ < activeQuestions.length - 1) {
-      // Robustly clear transcript and reset recognition
       if (isRecording) {
         recognitionRef.current?.stop();
         setTimeout(() => {
           setTranscript("");
+          setTypedAnswer("");
           setCurrentQ(prev => prev + 1);
           resetHistory();
           recognitionRef.current?.start();
         }, 300);
       } else {
         setTranscript("");
+        setTypedAnswer("");
         setCurrentQ(prev => prev + 1);
         resetHistory();
       }
@@ -272,9 +314,11 @@ const InterviewPage = () => {
 
   const finishResumeRound = async () => {
     saveCurrentQuestionData();
+    window.speechSynthesis?.cancel();
     stopCamera();
     recognitionRef.current?.stop();
     setIsRecording(false);
+    setTypedAnswer("");
     await generateHRQuestions();
   };
 
@@ -405,12 +449,31 @@ const InterviewPage = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold mb-2">Practice Session — {phaseLabel}</h1>
-        <p className="text-muted-foreground">Answer all {qs.length} questions. Analysis runs after both rounds complete.</p>
+        <p className="text-muted-foreground">Answer all {qs.length} questions. Speak your answer AND/OR type it below.</p>
       </div>
       <div className="rounded-xl border border-border bg-card p-6 glow-border">
         <div className="mb-4">
-          <span className="text-xs text-primary font-mono">{phaseLabel} — Question {currentQ + 1} of {qs.length}</span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-primary font-mono">{phaseLabel} — Question {currentQ + 1} of {qs.length}</span>
+            <Button variant="ghost" size="sm" onClick={() => speakQuestion(qs[currentQ]?.question)} disabled={isSpeaking}
+              className="gap-1.5 text-xs text-primary hover:text-primary hover:bg-primary/10">
+              {isSpeaking ? <Loader2 className="h-3 w-3 animate-spin" /> : <Volume2 className="h-3 w-3" />}
+              {isSpeaking ? "Speaking..." : "Replay Voice"}
+            </Button>
+          </div>
           <p className="text-lg font-medium mt-1">{qs[currentQ]?.question}</p>
+          {isSpeaking && (
+            <div className="flex items-center gap-2 mt-2 text-xs text-primary">
+              <div className="flex gap-0.5">
+                <span className="w-1 h-3 bg-primary rounded-full animate-pulse" />
+                <span className="w-1 h-4 bg-primary rounded-full animate-pulse" style={{ animationDelay: "0.1s" }} />
+                <span className="w-1 h-2 bg-primary rounded-full animate-pulse" style={{ animationDelay: "0.2s" }} />
+                <span className="w-1 h-5 bg-primary rounded-full animate-pulse" style={{ animationDelay: "0.3s" }} />
+                <span className="w-1 h-3 bg-primary rounded-full animate-pulse" style={{ animationDelay: "0.4s" }} />
+              </div>
+              AI Interviewer is speaking...
+            </div>
+          )}
         </div>
 
         <div className="relative aspect-video rounded-lg bg-secondary/50 border border-border overflow-hidden mb-4">
@@ -432,9 +495,20 @@ const InterviewPage = () => {
 
         {transcript && (
           <div className="rounded-lg bg-secondary/50 border border-border p-3 mb-4 text-sm text-muted-foreground">
-            <span className="text-xs text-primary font-mono block mb-1">Transcript:</span>{transcript}
+            <span className="text-xs text-primary font-mono block mb-1">🎤 Voice Transcript:</span>{transcript}
           </div>
         )}
+
+        {/* Typed Answer Box */}
+        <div className="mb-4">
+          <label className="text-xs font-mono text-muted-foreground block mb-1.5">✍️ Type your answer (optional — complements voice):</label>
+          <textarea
+            value={typedAnswer}
+            onChange={(e) => setTypedAnswer(e.target.value)}
+            placeholder="Type your answer here... You can use both voice and text."
+            className="w-full h-28 bg-secondary/50 border border-border rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder:text-muted-foreground"
+          />
+        </div>
 
         <div className="flex flex-wrap gap-3">
           <Button variant="outline" onClick={cameraOn ? stopCamera : startCamera} className="gap-2 border-border">
@@ -461,7 +535,7 @@ const InterviewPage = () => {
         {/* Question dots */}
         <div className="flex gap-2 mt-4">
           {qs.map((_, i) => (
-            <button key={i} onClick={() => { saveCurrentQuestionData(); setCurrentQ(i); setTranscript(""); resetHistory(); }}
+            <button key={i} onClick={() => { saveCurrentQuestionData(); setTypedAnswer(questionTypedAnswers[isHrPhase ? questions.length + i : i] || ""); setCurrentQ(i); setTranscript(""); resetHistory(); }}
               className={`w-8 h-8 rounded-full text-xs font-bold transition-colors ${i === currentQ ? "bg-primary text-primary-foreground" : i < currentQ ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-secondary text-muted-foreground hover:bg-secondary/80"}`}>
               {i + 1}
             </button>
