@@ -104,9 +104,11 @@ const InterviewPage = () => {
   const saveCurrentQuestionData = useCallback(() => {
     const idx = isHrPhase ? questions.length + currentQ : currentQ;
     const avgScores = getAverageScores() as unknown as Record<string, number>;
+    // Combine voice transcript and typed answer
+    const combinedAnswer = [transcript, typedAnswer].filter(Boolean).join(" | Typed: ");
     setQuestionTranscripts(prev => {
       const copy = [...prev];
-      copy[idx] = transcript;
+      copy[idx] = combinedAnswer;
       return copy;
     });
     setQuestionScores(prev => {
@@ -114,7 +116,12 @@ const InterviewPage = () => {
       copy[idx] = { ...avgScores };
       return copy;
     });
-  }, [currentQ, transcript, getAverageScores, isHrPhase, questions.length]);
+    setQuestionTypedAnswers(prev => {
+      const copy = [...prev];
+      copy[idx] = typedAnswer;
+      return copy;
+    });
+  }, [currentQ, transcript, typedAnswer, getAverageScores, isHrPhase, questions.length]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
