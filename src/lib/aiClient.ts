@@ -198,7 +198,25 @@ export async function analyzePresentationDirect(
     { role: "user", content: prompt }
   ], 0.3);
 
-  return parseJsonResponse(text, "object") as Record<string, unknown>;
+  const result = parseJsonResponse(text, "object") as Record<string, unknown>;
+
+  // Post-process: ensure questionBreakdown has exactly N entries
+  const breakdown = (result.questionBreakdown as any[]) || [];
+  const filled: any[] = [];
+  for (let i = 0; i < questions.length; i++) {
+    const existing = breakdown.find((b: any) => b.questionNumber === i + 1) || breakdown[i];
+    filled.push(existing || {
+      questionNumber: i + 1,
+      userAnswer: transcripts[i] || "(no response)",
+      idealAnswer: "Not generated",
+      score: 0,
+      feedback: "Analysis not available for this question."
+    });
+    filled[i].questionNumber = i + 1;
+  }
+  result.questionBreakdown = filled;
+
+  return result;
 }
 
 export async function chatWithReport(
