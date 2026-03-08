@@ -84,10 +84,10 @@ function MetricRow({ icon, label, value }: MetricRowProps) {
   );
 }
 
-export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLanguage, detectedEmotion = "Neutral", emotionConfidence = 0, warning, tabSwitchCount = 0, lookAwayCount = 0 }: LiveAnalysisProps) {
+export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLanguage, detectedEmotion = "Neutral", emotionConfidence = 0, warning, tabSwitchCount = 0, lookAwayCount = 0, headTiltCount = 0, erraticEyeCount = 0 }: LiveAnalysisProps) {
   const overall = Math.round((eyeContact + posture + expression + bodyLanguage) / 4);
   const emoji = EMOTION_EMOJI[detectedEmotion] || "😐";
-  const totalFlags = tabSwitchCount + lookAwayCount;
+  const totalFlags = tabSwitchCount + lookAwayCount + headTiltCount + erraticEyeCount;
 
   return (
     <>
