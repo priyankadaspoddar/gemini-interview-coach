@@ -1151,7 +1151,7 @@ const InterviewPage = () => {
                     { label: "Tab Switches", value: analysis.integrityAssessment.tabSwitches, critical: true },
                     { label: "Look-Aways", value: analysis.integrityAssessment.lookAways, critical: false },
                     { label: "Head Tilts", value: analysis.integrityAssessment.headTilts || 0, critical: false },
-                    { label: "Erratic Eye", value: analysis.integrityAssessment.erraticEyeMovements || 0, critical: true },
+                    { label: "Suspicious Gaze", value: analysis.integrityAssessment.suspiciousGaze || 0, critical: true },
                     { label: "Multiple Faces", value: analysis.integrityAssessment.multipleFaces || 0, critical: true },
                     { label: "Phone/Device", value: analysis.integrityAssessment.phoneDetections || 0, critical: true },
                     { label: "Screen Share", value: analysis.integrityAssessment.screenShares || 0, critical: true },
