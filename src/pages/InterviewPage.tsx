@@ -95,7 +95,8 @@ const InterviewPage = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const { scores: mpScores, isActive: mpActive, start: startMP, stop: stopMP, getAverageScores, resetHistory } = useMediaPipe(videoRef);
+  const { scores: mpScores, isActive: mpActive, isLoading: mpLoading, loadError: mpLoadError, start: startMP, stop: stopMP, getAverageScores, resetHistory } = useMediaPipe(videoRef);
+  const [mediaPipeReady, setMediaPipeReady] = useState(false);
 
   const isHrPhase = step === "hr-questions" || step === "hr-practice";
   const activeQuestions = isHrPhase ? hrQuestions : questions;
