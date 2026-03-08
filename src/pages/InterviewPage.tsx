@@ -601,6 +601,9 @@ const InterviewPage = () => {
               bodyLanguage={mpScores.bodyLanguage}
               detectedEmotion={mpScores.detectedEmotion}
               emotionConfidence={mpScores.emotionConfidence}
+              warning={activeWarning}
+              tabSwitchCount={tabSwitchCountRef.current}
+              lookAwayCount={lookAwayCountRef.current}
             />
           )}
         </div>
