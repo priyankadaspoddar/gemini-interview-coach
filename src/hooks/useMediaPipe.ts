@@ -1,5 +1,14 @@
 import { useRef, useCallback, useState, useEffect } from "react";
 
+export interface DetectedObject {
+  label: string;
+  score: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface MediaPipeScores {
   eyeContact: number;
   posture: number;
@@ -11,7 +20,8 @@ export interface MediaPipeScores {
   detectedEmotion: string;
   emotionConfidence: number;
   faceCount: number;
-  handNearFace: boolean;
+  phoneDetected: boolean;
+  detectedObjects: DetectedObject[];
 }
 
 const DEFAULT_SCORES: MediaPipeScores = {
