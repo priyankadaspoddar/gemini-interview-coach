@@ -20,7 +20,7 @@ const DEFAULT_SCORES: MediaPipeScores = {
   blinkRate: 0,
 };
 
-const EMA_ALPHA = 0.3; // Smoothing factor (0-1, lower = smoother)
+const EMA_ALPHA = 0.3;
 
 function emaSmooth(prev: number, next: number, alpha = EMA_ALPHA): number {
   return alpha * next + (1 - alpha) * prev;
@@ -30,7 +30,6 @@ function clamp(v: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, v));
 }
 
-// Distance helper for 2D landmarks
 function dist(a: { x: number; y: number }, b: { x: number; y: number }): number {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
 }
@@ -39,77 +38,83 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
   const scoresRef = useRef<MediaPipeScores>({ ...DEFAULT_SCORES });
   const [scores, setScores] = useState<MediaPipeScores>({ ...DEFAULT_SCORES });
   const [isActive, setIsActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const faceLandmarkerRef = useRef<any>(null);
   const poseLandmarkerRef = useRef<any>(null);
   const loadedRef = useRef(false);
+  const loadingRef = useRef(false);
   const historyRef = useRef<MediaPipeScores[]>([]);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const lastTimestampRef = useRef<number>(0);
 
   const loadMediaPipe = useCallback(async () => {
-    if (loadedRef.current) return;
-    loadedRef.current = true;
+    // Prevent double loading
+    if (loadedRef.current || loadingRef.current) return;
+    loadingRef.current = true;
+    setIsLoading(true);
     setLoadError(null);
 
     try {
-      // Check if MediaPipe is already loaded
-      if (typeof window !== 'undefined' && (window as any).MediaPipeVision) {
-        console.log("MediaPipe already loaded from window");
-        return;
-      }
+      // @ts-ignore - dynamic CDN import
+      const vision = await import(
+        /* @vite-ignore */
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs"
+      );
 
-      // Dynamically import MediaPipe vision from CDN with better error handling
-      try {
-        // @ts-ignore - dynamic CDN import
-        const vision = await import(
-          /* @vite-ignore */
-          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs"
-        );
+      const { FaceLandmarker, PoseLandmarker, FilesetResolver } = vision;
 
-        const { FaceLandmarker, PoseLandmarker, FilesetResolver } = vision;
+      const filesetResolver = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
+      );
 
-        const filesetResolver = await FilesetResolver.forVisionTasks(
-          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
-        );
+      faceLandmarkerRef.current = await FaceLandmarker.createFromOptions(filesetResolver, {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+          delegate: "GPU",
+        },
+        runningMode: "VIDEO",
+        numFaces: 1,
+        outputFaceBlendshapes: true,
+      });
 
-        faceLandmarkerRef.current = await FaceLandmarker.createFromOptions(filesetResolver, {
-          baseOptions: {
-            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-            delegate: "GPU",
-          },
-          runningMode: "VIDEO",
-          numFaces: 1,
-          outputFaceBlendshapes: true,
-        });
+      poseLandmarkerRef.current = await PoseLandmarker.createFromOptions(filesetResolver, {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
+          delegate: "GPU",
+        },
+        runningMode: "VIDEO",
+        numPoses: 1,
+      });
 
-        poseLandmarkerRef.current = await PoseLandmarker.createFromOptions(filesetResolver, {
-          baseOptions: {
-            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task",
-            delegate: "GPU",
-          },
-          runningMode: "VIDEO",
-          numPoses: 1,
-        });
-
-        console.log("MediaPipe loaded successfully");
-      } catch (importError) {
-        console.error("Failed to import MediaPipe:", importError);
-        setLoadError("Failed to load MediaPipe library. Please check your internet connection and try again.");
-        loadedRef.current = false;
-        throw importError;
-      }
+      loadedRef.current = true;
+      console.log("MediaPipe loaded successfully");
     } catch (err) {
       console.error("MediaPipe load error:", err);
-      loadedRef.current = false;
-      throw err;
+      setLoadError("Failed to load MediaPipe. Check your internet connection.");
+      loadingRef.current = false;
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
   const analyzeFrame = useCallback(() => {
     const video = videoRef.current;
-    if (!video || video.readyState < 2) return;
+    if (!video || video.readyState < 2 || video.paused || video.ended) {
+      // Keep the loop alive even if video isn't ready yet
+      rafRef.current = requestAnimationFrame(analyzeFrame);
+      return;
+    }
 
     const now = performance.now();
+    // Throttle to ~10 FPS to avoid overwhelming
+    if (now - lastTimestampRef.current < 100) {
+      rafRef.current = requestAnimationFrame(analyzeFrame);
+      return;
+    }
+    lastTimestampRef.current = now;
+
     const prev = scoresRef.current;
     let newScores = { ...prev };
 
@@ -160,6 +165,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
     // Pose analysis
     if (poseLandmarkerRef.current) {
       try {
+        // Use a slightly different timestamp to avoid collision with face detection
         const poseResult = poseLandmarkerRef.current.detectForVideo(video, now + 1);
 
         if (poseResult?.landmarks?.length > 0) {
@@ -169,7 +175,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
           const nose = lm[0];
 
           if (leftShoulder && rightShoulder && nose) {
-            // Posture: shoulder alignment
+            // Posture: shoulder alignment + head position
             const shoulderTilt = Math.abs(leftShoulder.y - rightShoulder.y);
             const shoulderMid = { x: (leftShoulder.x + rightShoulder.x) / 2, y: (leftShoulder.y + rightShoulder.y) / 2 };
             const noseAboveShoulder = shoulderMid.y - nose.y;
@@ -177,7 +183,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
             const postureRaw = clamp(80 - shoulderTilt * 300 + noseAboveShoulder * 50);
             newScores.posture = emaSmooth(prev.posture, postureRaw);
 
-            // Body language: overall stability and openness
+            // Body language: shoulder width (openness) and stability
             const shoulderWidth = dist(leftShoulder, rightShoulder);
             const bodyLangRaw = clamp(50 + shoulderWidth * 100 - shoulderTilt * 200);
             newScores.bodyLanguage = emaSmooth(prev.bodyLanguage, bodyLangRaw);
@@ -191,22 +197,39 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
     scoresRef.current = newScores;
     historyRef.current.push({ ...newScores });
 
-    // Keep last 300 frames (~30s at 10fps)
-    if (historyRef.current.length > 300) {
-      historyRef.current = historyRef.current.slice(-300);
+    // Keep last 600 frames (~60s at 10fps)
+    if (historyRef.current.length > 600) {
+      historyRef.current = historyRef.current.slice(-600);
     }
 
     setScores({ ...newScores });
+
+    // Continue the loop
+    rafRef.current = requestAnimationFrame(analyzeFrame);
   }, [videoRef]);
 
   const start = useCallback(async () => {
     await loadMediaPipe();
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(analyzeFrame, 100); // 10 FPS
+    // Stop any existing loop
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    // Use requestAnimationFrame for smoother, more reliable loop
+    lastTimestampRef.current = 0;
+    rafRef.current = requestAnimationFrame(analyzeFrame);
     setIsActive(true);
   }, [loadMediaPipe, analyzeFrame]);
 
   const stop = useCallback(() => {
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -228,7 +251,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
         mouthOpenness: acc.mouthOpenness + s.mouthOpenness,
         blinkRate: acc.blinkRate + s.blinkRate,
       }),
-      { ...DEFAULT_SCORES }
+      { eyeContact: 0, posture: 0, expression: 0, bodyLanguage: 0, headTilt: 0, mouthOpenness: 0, blinkRate: 0 }
     );
 
     const len = h.length;
@@ -255,5 +278,5 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
     };
   }, [stop]);
 
-  return { scores, isActive, start, stop, getAverageScores, resetHistory };
+  return { scores, isActive, isLoading, loadError, start, stop, getAverageScores, resetHistory };
 }
