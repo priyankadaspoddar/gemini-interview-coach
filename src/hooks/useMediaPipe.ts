@@ -101,19 +101,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
 
   const analyzeFrame = useCallback(() => {
     const video = videoRef.current;
-    if (!video || video.readyState < 2 || video.paused || video.ended) {
-      // Keep the loop alive even if video isn't ready yet
-      rafRef.current = requestAnimationFrame(analyzeFrame);
-      return;
-    }
-
-    const now = performance.now();
-    // Throttle to ~10 FPS to avoid overwhelming
-    if (now - lastTimestampRef.current < 100) {
-      rafRef.current = requestAnimationFrame(analyzeFrame);
-      return;
-    }
-    lastTimestampRef.current = now;
+    if (!video || video.readyState < 2 || video.paused || video.ended) return;
 
     const prev = scoresRef.current;
     let newScores = { ...prev };
