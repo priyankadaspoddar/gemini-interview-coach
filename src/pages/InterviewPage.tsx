@@ -31,6 +31,7 @@ interface AnalysisResult {
   vision: {
     eyeContact: number; posture: number; expression: number; bodyLanguage: number;
     detectedEmotion?: string; gestureType?: string; postureType?: string; feedback?: string;
+    emotionBreakdown?: Record<string, number>;
   };
   voice: {
     clarity: number; pace: number; tone: number; engagement: number;
@@ -42,10 +43,22 @@ interface AnalysisResult {
   topStrengths?: string[];
   topImprovements?: string[];
   algorithmNotes?: { facsUnitsDetected?: string; emaSmoothingApplied?: boolean; mediaPipeConfidence?: string; voicePatternType?: string };
-  questionBreakdown?: { questionNumber: number; userAnswer: string; idealAnswer: string; score: number; feedback: string }[];
+  questionBreakdown?: { questionNumber: number; userAnswer: string; idealAnswer: string; score: number; feedback: string; emotionDuringAnswer?: string; bodyLanguageNote?: string }[];
   metadata?: { avgResponseLength: number; fillerWordCount: number; confidenceScore: number };
   resumeAlignment?: { skillsInResume: string[]; skillsDemonstrated: string[]; alignmentPercentage: number };
   recruiterView?: { shortlist: boolean; hireRecommendation: string; suitableRoles: string[] };
+  nonVerbalAnalysis?: {
+    overallPresence: string;
+    emotionalIntelligence: string;
+    strengthPraises: string[];
+    improvementTips: string[];
+  };
+  integrityAssessment?: {
+    tabSwitches: number;
+    lookAways: number;
+    riskLevel: string;
+    notes: string;
+  };
 }
 
 type Step = "upload" | "questions" | "resume-tips" | "practice" | "hr-questions" | "hr-tips" | "hr-practice" | "results";
