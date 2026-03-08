@@ -755,67 +755,83 @@ const InterviewPage = () => {
           )}
         </div>
 
-        <div className="relative aspect-video rounded-lg bg-secondary/50 border border-border overflow-hidden mb-4">
-          <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
-          {!cameraOn && (
-            <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-              <div className="text-center"><CameraOff className="h-12 w-12 mx-auto mb-2" /><p className="text-sm">Camera not active</p></div>
-            </div>
-          )}
-          {cameraOn && mpLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm z-10">
-              <div className="text-center space-y-3">
-                <Loader2 className="h-10 w-10 mx-auto animate-spin text-primary" />
-                <p className="text-sm font-medium text-foreground">Loading AI Vision Models...</p>
-                <p className="text-xs text-muted-foreground">Face & pose detection initializing</p>
+        <div className="flex gap-4 mb-4">
+          {/* Camera Feed */}
+          <div className="relative flex-1 aspect-video rounded-lg bg-secondary/50 border border-border overflow-hidden">
+            <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
+            {!cameraOn && (
+              <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                <div className="text-center"><CameraOff className="h-12 w-12 mx-auto mb-2" /><p className="text-sm">Camera not active</p></div>
               </div>
-            </div>
-          )}
-          {mpLoadError && (
-            <div className="absolute bottom-3 left-3 right-3 bg-destructive/90 text-destructive-foreground rounded-lg p-2 text-xs z-10">
-              <AlertTriangle className="h-3 w-3 inline mr-1" /> {mpLoadError}
-            </div>
-          )}
+            )}
+            {cameraOn && mpLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm z-10">
+                <div className="text-center space-y-3">
+                  <Loader2 className="h-10 w-10 mx-auto animate-spin text-primary" />
+                  <p className="text-sm font-medium text-foreground">Loading AI Vision Models...</p>
+                  <p className="text-xs text-muted-foreground">Face & pose detection initializing</p>
+                </div>
+              </div>
+            )}
+            {mpLoadError && (
+              <div className="absolute bottom-3 left-3 right-3 bg-destructive/90 text-destructive-foreground rounded-lg p-2 text-xs z-10">
+                <AlertTriangle className="h-3 w-3 inline mr-1" /> {mpLoadError}
+              </div>
+            )}
+            {/* Warning banner — full width over camera */}
+            {mpActive && activeWarning && (
+              <div className="absolute top-0 left-0 right-0 z-50 animate-fade-in p-2">
+                <div className="bg-destructive text-destructive-foreground rounded-lg px-4 py-3 text-sm font-semibold flex items-center gap-2 shadow-2xl border border-destructive-foreground/20">
+                  <AlertTriangle className="h-5 w-5 flex-shrink-0 animate-pulse" />
+                  <span>{activeWarning}</span>
+                </div>
+              </div>
+            )}
+            {/* Device bounding boxes */}
+            {mpActive && mpScores.detectedObjects.length > 0 && mpScores.detectedObjects.map((obj, i) => {
+              const isSuspicious = ["cell phone", "remote", "laptop", "tablet"].includes(obj.label.toLowerCase());
+              return (
+                <div
+                  key={i}
+                  className={`absolute rounded-md pointer-events-none z-30 ${isSuspicious ? "border-2 border-destructive animate-pulse" : "border border-amber-400/60"}`}
+                  style={{
+                    left: `${obj.x * 100}%`,
+                    top: `${obj.y * 100}%`,
+                    width: `${obj.width * 100}%`,
+                    height: `${obj.height * 100}%`,
+                  }}
+                >
+                  <span className={`absolute -top-5 left-0 text-[10px] font-bold px-1.5 py-0.5 rounded ${isSuspicious ? "bg-destructive text-destructive-foreground" : "bg-amber-500/80 text-white"}`}>
+                    {isSuspicious ? "📱" : "🔍"} {obj.label} ({obj.score}%)
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Live Analysis Panel — Right Side */}
           {mpActive && (
-            <LiveAnalysisOverlay
-              eyeContact={mpScores.eyeContact}
-              posture={mpScores.posture}
-              expression={mpScores.expression}
-              bodyLanguage={mpScores.bodyLanguage}
-              detectedEmotion={mpScores.detectedEmotion}
-              emotionConfidence={mpScores.emotionConfidence}
-              warning={activeWarning}
-              tabSwitchCount={tabSwitchCountRef.current}
-              lookAwayCount={lookAwayCountRef.current}
-              headTiltCount={headTiltCountRef.current}
-              suspiciousGazeCount={suspiciousGazeCountRef.current}
-              multipleFaceCount={multipleFaceCountRef.current}
-              phoneDetectCount={phoneDetectCountRef.current}
-              screenShareCount={screenShareCountRef.current}
-              copyPasteCount={copyPasteCountRef.current}
-              inactivityCount={inactivityCountRef.current}
-            />
+            <div className="w-56 flex-shrink-0">
+              <LiveAnalysisOverlay
+                eyeContact={mpScores.eyeContact}
+                posture={mpScores.posture}
+                expression={mpScores.expression}
+                bodyLanguage={mpScores.bodyLanguage}
+                detectedEmotion={mpScores.detectedEmotion}
+                emotionConfidence={mpScores.emotionConfidence}
+                warning={null}
+                tabSwitchCount={tabSwitchCountRef.current}
+                lookAwayCount={lookAwayCountRef.current}
+                headTiltCount={headTiltCountRef.current}
+                suspiciousGazeCount={suspiciousGazeCountRef.current}
+                multipleFaceCount={multipleFaceCountRef.current}
+                phoneDetectCount={phoneDetectCountRef.current}
+                screenShareCount={screenShareCountRef.current}
+                copyPasteCount={copyPasteCountRef.current}
+                inactivityCount={inactivityCountRef.current}
+              />
+            </div>
           )}
-          {/* Device bounding boxes with severity coloring */}
-          {mpActive && mpScores.detectedObjects.length > 0 && mpScores.detectedObjects.map((obj, i) => {
-            const isSuspicious = ["cell phone", "remote", "laptop", "tablet"].includes(obj.label.toLowerCase());
-            return (
-              <div
-                key={i}
-                className={`absolute rounded-md pointer-events-none z-30 ${isSuspicious ? "border-2 border-destructive animate-pulse" : "border border-amber-400/60"}`}
-                style={{
-                  left: `${obj.x * 100}%`,
-                  top: `${obj.y * 100}%`,
-                  width: `${obj.width * 100}%`,
-                  height: `${obj.height * 100}%`,
-                }}
-              >
-                <span className={`absolute -top-5 left-0 text-[10px] font-bold px-1.5 py-0.5 rounded ${isSuspicious ? "bg-destructive text-destructive-foreground" : "bg-amber-500/80 text-white"}`}>
-                  {isSuspicious ? "📱" : "🔍"} {obj.label} ({obj.score}%)
-                </span>
-              </div>
-            );
-          })}
         </div>
 
         {transcript && (
