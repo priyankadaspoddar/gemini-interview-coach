@@ -15,6 +15,7 @@ interface LiveAnalysisProps {
   erraticEyeCount?: number;
   multipleFaceCount?: number;
   phoneDetectCount?: number;
+  screenShareCount?: number;
 }
 
 function getScoreColor(score: number) {
