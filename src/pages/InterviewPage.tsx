@@ -183,15 +183,15 @@ const InterviewPage = () => {
     const checkInterval = setInterval(() => {
       const now = Date.now();
 
-      // Look-away detection
-      if (mpScores.eyeContact < 25 && now - lastLookAwayRef.current > 5000) {
+      // Look-away detection — triggers when eye contact drops below 40%
+      if (mpScores.eyeContact < 40 && now - lastLookAwayRef.current > 3000) {
         lastLookAwayRef.current = now;
         lookAwayCountRef.current++;
         showWarningRef.current("👀 You seem to be looking away. Maintain eye contact with the camera.", "look_away");
       }
 
-      // Suspicious head tilt detection
-      if (mpScores.headTilt > 15 && now - lastHeadTiltRef.current > 6000) {
+      // Suspicious head tilt detection — triggers at 8° tilt
+      if (mpScores.headTilt > 8 && now - lastHeadTiltRef.current > 4000) {
         lastHeadTiltRef.current = now;
         headTiltCountRef.current++;
         showWarningRef.current("🔄 Suspicious head tilt detected. Keep your head straight and face the camera.", "head_tilt");
@@ -214,14 +214,14 @@ const InterviewPage = () => {
       }
 
       // Multiple face detection
-      if (mpScores.faceCount > 1 && now - lastMultiFaceRef.current > 8000) {
+      if (mpScores.faceCount > 1 && now - lastMultiFaceRef.current > 5000) {
         lastMultiFaceRef.current = now;
         multipleFaceCountRef.current++;
         showWarningRef.current(`👥 ${mpScores.faceCount} faces detected! Only the candidate should be visible.`, "multiple_faces");
       }
 
       // Phone/hand near face detection
-      if (mpScores.handNearFace && now - lastPhoneRef.current > 8000) {
+      if (mpScores.handNearFace && now - lastPhoneRef.current > 5000) {
         lastPhoneRef.current = now;
         phoneDetectCountRef.current++;
         showWarningRef.current("📱 Hand near face detected — possible phone usage. Keep hands away from your face.", "phone_detect");
