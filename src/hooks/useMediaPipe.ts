@@ -101,19 +101,8 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
 
   const analyzeFrame = useCallback(() => {
     const video = videoRef.current;
-    if (!video || video.readyState < 2 || video.paused || video.ended) {
-      // Keep the loop alive even if video isn't ready yet
-      rafRef.current = requestAnimationFrame(analyzeFrame);
-      return;
-    }
-
+    if (!video || video.readyState < 2 || video.paused || video.ended) return;
     const now = performance.now();
-    // Throttle to ~10 FPS to avoid overwhelming
-    if (now - lastTimestampRef.current < 100) {
-      rafRef.current = requestAnimationFrame(analyzeFrame);
-      return;
-    }
-    lastTimestampRef.current = now;
 
     const prev = scoresRef.current;
     let newScores = { ...prev };
@@ -203,33 +192,20 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
     }
 
     setScores({ ...newScores });
-
-    // Continue the loop
-    rafRef.current = requestAnimationFrame(analyzeFrame);
   }, [videoRef]);
 
   const start = useCallback(async () => {
     await loadMediaPipe();
-    // Stop any existing loop
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    // Use requestAnimationFrame for smoother, more reliable loop
-    lastTimestampRef.current = 0;
-    rafRef.current = requestAnimationFrame(analyzeFrame);
+    // Use setInterval at 5 FPS to avoid blocking the main thread
+    intervalRef.current = setInterval(analyzeFrame, 200);
     setIsActive(true);
   }, [loadMediaPipe, analyzeFrame]);
 
   const stop = useCallback(() => {
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
