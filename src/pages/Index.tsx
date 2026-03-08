@@ -641,7 +641,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          <p>Built with Groq AI • NER-KE Algorithm v2.0 • FACS Vision Analysis</p>
+          <p>Built with Groq AI • NER-KE Algorithm v2.0 • FACS Vision Analysis • Integrity Monitor v1.0</p>
         </div>
       </footer>
     </div>
