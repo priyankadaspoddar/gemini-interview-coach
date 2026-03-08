@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Upload, FileText, Loader2, ArrowLeft, Video, Mic, MicOff, Camera, CameraOff, ChevronRight, Eye, BarChart3, Activity, Brain, Target, AlertTriangle, CheckCircle2, TrendingUp, SkipForward, Download, Users, Send, MessageCircle, BookOpen, Database, Volume2, Shield, ShieldAlert, Sparkles } from "lucide-react";
+import { Upload, FileText, Loader2, ArrowLeft, Video, Mic, MicOff, Camera, CameraOff, ChevronRight, Eye, BarChart3, Activity, Brain, Target, AlertTriangle, CheckCircle2, TrendingUp, SkipForward, Download, Users, Send, MessageCircle, BookOpen, Database, Volume2, Shield, ShieldAlert, Sparkles, Home } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
