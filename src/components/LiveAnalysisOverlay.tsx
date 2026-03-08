@@ -139,6 +139,12 @@ export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLangu
             {erraticEyeCount > 0 && (
               <div className="text-muted-foreground">Erratic eyes: <span className="text-destructive font-mono">{erraticEyeCount}</span></div>
             )}
+            {multipleFaceCount > 0 && (
+              <div className="text-muted-foreground">Multi-face: <span className="text-destructive font-mono">{multipleFaceCount}</span></div>
+            )}
+            {phoneDetectCount > 0 && (
+              <div className="text-muted-foreground">Phone/hand: <span className="text-destructive font-mono">{phoneDetectCount}</span></div>
+            )}
           </div>
         )}
 
