@@ -259,7 +259,7 @@ export async function analyzePresentationDirect(
   6. Scores are 0-100. Be intelligent, insightful, and official.
   7. The "nonVerbalAnalysis" section MUST contain genuine praise for good scores and constructive tips for weak areas. Reference actual numbers.
   8. Each questionBreakdown entry should include "emotionDuringAnswer" and "bodyLanguageNote" based on the mediaPipeScores for that question.
-  9. The "integrityAssessment" MUST reflect ALL 9 integrity signals (tab switches, look-aways, head tilts, erratic eye, multiple faces, phone detections, screen shares, copy-paste, inactivity). Copy the exact counts from the integrity monitoring data. If all counts are 0, riskLevel should be "None" with positive notes. Multiple faces or phone detections should increase severity significantly.`;
+  9. The "integrityAssessment" MUST reflect ALL 9 integrity signals (tab switches, look-aways, head tilts, suspicious gaze, multiple faces, phone detections, screen shares, copy-paste, inactivity). Copy the exact counts from the integrity monitoring data. If all counts are 0, riskLevel should be "None" with positive notes. Multiple faces or phone detections should increase severity significantly.`;
 
   const text = await callGroq(key, [
     { role: "system", content: "You are an expert recruiter and interview coach. Return comprehensive analysis in strict JSON format." },
