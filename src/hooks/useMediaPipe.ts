@@ -118,7 +118,6 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       );
 
       const { FaceLandmarker, PoseLandmarker, FilesetResolver } = vision;
-      const ObjectDetector = (vision as any).ObjectDetector;
 
       const filesetResolver = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
@@ -143,16 +142,26 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
         numPoses: 2,
       });
 
-      // Object detector for phone/device detection using EfficientDet-Lite0 (COCO classes include "cell phone")
-      objectDetectorRef.current = await ObjectDetector.createFromOptions(filesetResolver, {
-        baseOptions: {
-          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/int8/1/efficientdet_lite0.tflite",
-          delegate: "GPU",
-        },
-        runningMode: "VIDEO",
-        scoreThreshold: 0.35,
-        maxResults: 5,
-      });
+      // Object detector for phone/device detection — loaded separately so face/pose still work if this fails
+      try {
+        const OD = (vision as any).ObjectDetector;
+        if (OD) {
+          objectDetectorRef.current = await OD.createFromOptions(filesetResolver, {
+            baseOptions: {
+              modelAssetPath: "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/int8/latest/efficientdet_lite0.tflite",
+              delegate: "GPU",
+            },
+            runningMode: "VIDEO",
+            scoreThreshold: 0.3,
+            maxResults: 5,
+          });
+          console.log("ObjectDetector loaded successfully");
+        } else {
+          console.warn("ObjectDetector not available in vision bundle");
+        }
+      } catch (odErr) {
+        console.warn("ObjectDetector failed to load (phone detection disabled):", odErr);
+      }
 
       loadedRef.current = true;
       console.log("MediaPipe loaded successfully");
@@ -261,7 +270,13 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
           const detectedObjects: DetectedObject[] = [];
           let phoneFound = false;
 
-          if (objResult?.detections) {
+          if (objResult?.detections?.length > 0) {
+            // Log all detected objects for debugging
+            const allLabels = objResult.detections.map((d: any) => 
+              d.categories?.map((c: any) => `${c.categoryName}(${Math.round(c.score * 100)}%)`).join(', ')
+            ).join(' | ');
+            console.log('[ObjectDetector]', allLabels);
+
             for (const d of objResult.detections) {
               const cat = d.categories?.[0];
               if (cat && PHONE_CLASSES.includes(cat.categoryName?.toLowerCase())) {
