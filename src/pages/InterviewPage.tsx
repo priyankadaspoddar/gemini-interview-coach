@@ -222,21 +222,49 @@ const InterviewPage = () => {
       const video = videoRef.current;
       if (!video) return;
       
-      video.srcObject = streamRef.current;
+      // Only set srcObject if it's not already set
+      if (video.srcObject !== streamRef.current) {
+        video.srcObject = streamRef.current;
+      }
       video.onloadedmetadata = () => {
         video.play().then(() => {
           console.log("Video playing:", video.videoWidth, "x", video.videoHeight);
-          // Start MediaPipe after video is confirmed playing
           startMPRef.current().then(() => {
             setMediaPipeReady(true);
           }).catch(console.error);
         }).catch(console.error);
       };
+      // If video already has metadata (e.g. re-attach), just play
+      if (video.readyState >= 2) {
+        video.play().catch(console.error);
+      }
     };
 
-    // Small delay to ensure DOM is ready
-    const timer = setTimeout(attachStream, 200);
-    return () => clearTimeout(timer);
+    // Attach immediately and also with a small delay as fallback
+    attachStream();
+    const timer = setTimeout(attachStream, 500);
+
+    // Re-attach on every render cycle to prevent blank video
+    const interval = setInterval(() => {
+      const video = videoRef.current;
+      if (video && streamRef.current && video.srcObject !== streamRef.current) {
+        console.log("Re-attaching video stream");
+        video.srcObject = streamRef.current;
+        video.play().catch(() => {});
+      }
+      // Check if stream tracks are still alive
+      if (streamRef.current) {
+        const tracks = streamRef.current.getVideoTracks();
+        if (tracks.length === 0 || tracks[0].readyState === 'ended') {
+          console.warn("Camera track ended unexpectedly");
+        }
+      }
+    }, 2000);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, [cameraOn]);
 
   // Auto-start camera when entering practice steps
