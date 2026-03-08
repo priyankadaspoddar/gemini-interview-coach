@@ -57,7 +57,7 @@ interface AnalysisResult {
     tabSwitches: number;
     lookAways: number;
     headTilts: number;
-    erraticEyeMovements: number;
+    suspiciousGaze: number;
     multipleFaces: number;
     phoneDetections: number;
     screenShares: number;
