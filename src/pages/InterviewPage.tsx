@@ -60,6 +60,7 @@ interface AnalysisResult {
     erraticEyeMovements: number;
     multipleFaces: number;
     phoneDetections: number;
+    screenShares: number;
     riskLevel: string;
     notes: string;
   };
@@ -119,6 +120,7 @@ const InterviewPage = () => {
   const lastMultiFaceRef = useRef(0);
   const phoneDetectCountRef = useRef(0);
   const lastPhoneRef = useRef(0);
+  const screenShareCountRef = useRef(0);
 
   // Load available voices
   useEffect(() => {
@@ -179,7 +181,55 @@ const InterviewPage = () => {
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [isPracticing, toast]);
 
-  // Cheating detection — polled on 2s interval for efficiency
+  // Screen sharing / recording detection
+  useEffect(() => {
+    if (!isPracticing) return;
+
+    // Intercept getDisplayMedia to detect screen sharing attempts
+    const originalGetDisplayMedia = navigator.mediaDevices?.getDisplayMedia?.bind(navigator.mediaDevices);
+    if (navigator.mediaDevices && originalGetDisplayMedia) {
+      navigator.mediaDevices.getDisplayMedia = async function (...args: any[]) {
+        screenShareCountRef.current++;
+        showWarningRef.current("🖥️ Screen sharing/recording detected! This is flagged as suspicious.", "screen_share");
+        toast({ title: "Warning: Screen Sharing", description: "Screen sharing or recording during interview is flagged.", variant: "destructive" });
+        return originalGetDisplayMedia(...args);
+      } as any;
+    }
+
+    // Detect if screen is already being captured via Permissions API
+    const checkScreenCapture = async () => {
+      try {
+        if (navigator.permissions) {
+          const status = await (navigator.permissions as any).query({ name: 'display-capture' as any });
+          if (status.state === 'granted') {
+            // Screen capture permission is active
+            screenShareCountRef.current++;
+            showWarningRef.current("🖥️ Screen capture permission detected! Recording is not allowed.", "screen_share");
+          }
+        }
+      } catch {
+        // Permission query not supported, skip
+      }
+    };
+    checkScreenCapture();
+
+    // Detect common screen recording extensions via performance observer
+    const detectRecording = () => {
+      // Check if any MediaStreamTrack of type 'video' with label containing 'screen' or 'display' exists
+      if (typeof navigator.mediaDevices?.enumerateDevices === 'function') {
+        // We can't directly detect, but we can check if the page is visible when focus changes
+      }
+    };
+    detectRecording();
+
+    return () => {
+      // Restore original getDisplayMedia
+      if (navigator.mediaDevices && originalGetDisplayMedia) {
+        navigator.mediaDevices.getDisplayMedia = originalGetDisplayMedia;
+      }
+    };
+  }, [isPracticing, toast]);
+
   useEffect(() => {
     if (!isPracticing || !mpActive) return;
     const checkInterval = setInterval(() => {
@@ -505,6 +555,7 @@ const InterviewPage = () => {
           erraticEyeMovements: erraticEyeCountRef.current,
           multipleFaces: multipleFaceCountRef.current,
           phoneDetections: phoneDetectCountRef.current,
+          screenShares: screenShareCountRef.current,
           warnings: cheatingWarnings,
         }
       );
@@ -688,6 +739,7 @@ const InterviewPage = () => {
               erraticEyeCount={erraticEyeCountRef.current}
               multipleFaceCount={multipleFaceCountRef.current}
               phoneDetectCount={phoneDetectCountRef.current}
+              screenShareCount={screenShareCountRef.current}
             />
           )}
           {/* Phone bounding boxes */}
