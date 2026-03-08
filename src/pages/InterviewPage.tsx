@@ -1143,43 +1143,25 @@ const InterviewPage = () => {
                     {analysis.integrityAssessment.riskLevel === "None" ? "✓ Clean" : `⚠ ${analysis.integrityAssessment.riskLevel} Risk`}
                   </div>
                 </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Tab Switches</span>
-                    <p className={`text-2xl font-bold font-mono ${analysis.integrityAssessment.tabSwitches === 0 ? "text-emerald-400" : "text-destructive"}`}>
-                      {analysis.integrityAssessment.tabSwitches}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Look-Aways</span>
-                    <p className={`text-2xl font-bold font-mono ${analysis.integrityAssessment.lookAways === 0 ? "text-emerald-400" : "text-amber-400"}`}>
-                      {analysis.integrityAssessment.lookAways}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Head Tilts</span>
-                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.headTilts || 0) === 0 ? "text-emerald-400" : "text-amber-400"}`}>
-                      {analysis.integrityAssessment.headTilts || 0}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Erratic Eye</span>
-                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.erraticEyeMovements || 0) === 0 ? "text-emerald-400" : "text-destructive"}`}>
-                      {analysis.integrityAssessment.erraticEyeMovements || 0}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Multiple Faces</span>
-                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.multipleFaces || 0) === 0 ? "text-emerald-400" : "text-destructive"}`}>
-                      {analysis.integrityAssessment.multipleFaces || 0}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Phone/Hand</span>
-                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.phoneDetections || 0) === 0 ? "text-emerald-400" : "text-destructive"}`}>
-                      {analysis.integrityAssessment.phoneDetections || 0}
-                    </p>
-                  </div>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "Tab Switches", value: analysis.integrityAssessment.tabSwitches, critical: true },
+                    { label: "Look-Aways", value: analysis.integrityAssessment.lookAways, critical: false },
+                    { label: "Head Tilts", value: analysis.integrityAssessment.headTilts || 0, critical: false },
+                    { label: "Erratic Eye", value: analysis.integrityAssessment.erraticEyeMovements || 0, critical: true },
+                    { label: "Multiple Faces", value: analysis.integrityAssessment.multipleFaces || 0, critical: true },
+                    { label: "Phone/Device", value: analysis.integrityAssessment.phoneDetections || 0, critical: true },
+                    { label: "Screen Share", value: analysis.integrityAssessment.screenShares || 0, critical: true },
+                    { label: "Copy/Paste", value: analysis.integrityAssessment.copyPastes || 0, critical: true },
+                    { label: "Inactivity", value: analysis.integrityAssessment.inactivity || 0, critical: false },
+                  ].map((item) => (
+                    <div key={item.label} className="p-4 rounded-lg bg-card border border-border text-center">
+                      <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">{item.label}</span>
+                      <p className={`text-2xl font-bold font-mono ${item.value === 0 ? "text-emerald-400" : item.critical ? "text-destructive" : "text-amber-400"}`}>
+                        {item.value}
+                      </p>
+                    </div>
+                  ))}
                 </div>
                 {analysis.integrityAssessment.notes && (
                   <p className="text-sm text-muted-foreground border-t border-border pt-3">{analysis.integrityAssessment.notes}</p>

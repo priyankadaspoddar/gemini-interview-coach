@@ -129,7 +129,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
           delegate: "GPU",
         },
         runningMode: "VIDEO",
-        numFaces: 4,
+        numFaces: 6,
         outputFaceBlendshapes: true,
       });
 
