@@ -13,6 +13,8 @@ interface LiveAnalysisProps {
   lookAwayCount?: number;
   headTiltCount?: number;
   erraticEyeCount?: number;
+  multipleFaceCount?: number;
+  phoneDetectCount?: number;
 }
 
 function getScoreColor(score: number) {
