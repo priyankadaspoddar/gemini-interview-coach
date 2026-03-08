@@ -128,8 +128,9 @@ const InterviewPage = () => {
   const isHrPhase = step === "hr-questions" || step === "hr-practice";
   const isPracticing = step === "practice" || step === "hr-practice";
 
-  // Show warning helper
-  const showWarning = useCallback((message: string, type: string) => {
+  // Show warning helper — uses ref to avoid re-render deps
+  const showWarningRef = useRef<(message: string, type: string) => void>(() => {});
+  showWarningRef.current = useCallback((message: string, type: string) => {
     const qIndex = isHrPhase ? questions.length + currentQ : currentQ;
     setCheatingWarnings(prev => [...prev, { type, timestamp: Date.now(), question: qIndex + 1 }]);
     setActiveWarning(message);
@@ -137,30 +138,34 @@ const InterviewPage = () => {
     warningTimeoutRef.current = setTimeout(() => setActiveWarning(null), 4000);
   }, [currentQ, isHrPhase, questions.length]);
 
-  // Tab switch detection
+  // Tab switch detection (event-driven, minimal overhead)
   useEffect(() => {
     if (!isPracticing) return;
     const handleVisibility = () => {
       if (document.hidden) {
         tabSwitchCountRef.current++;
-        showWarning("⚠️ Tab switch detected! Stay focused on the interview.", "tab_switch");
+        showWarningRef.current("⚠️ Tab switch detected! Stay focused on the interview.", "tab_switch");
         toast({ title: "Warning: Tab Switch", description: "Switching tabs during interview is flagged as suspicious.", variant: "destructive" });
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
     return () => document.removeEventListener("visibilitychange", handleVisibility);
-  }, [isPracticing, showWarning, toast]);
+  }, [isPracticing, toast]);
 
-  // Eye contact / looking away detection
+  // Eye contact / looking away detection — polled on interval instead of per-score-change
   useEffect(() => {
     if (!isPracticing || !mpActive) return;
-    const now = Date.now();
-    if (mpScores.eyeContact < 25 && now - lastLookAwayRef.current > 5000) {
-      lastLookAwayRef.current = now;
-      lookAwayCountRef.current++;
-      showWarning("👀 You seem to be looking away. Maintain eye contact with the camera.", "look_away");
-    }
-  }, [mpScores.eyeContact, isPracticing, mpActive, showWarning]);
+    const checkInterval = setInterval(() => {
+      const eyeContact = mpScores.eyeContact;
+      const now = Date.now();
+      if (eyeContact < 25 && now - lastLookAwayRef.current > 5000) {
+        lastLookAwayRef.current = now;
+        lookAwayCountRef.current++;
+        showWarningRef.current("👀 You seem to be looking away. Maintain eye contact with the camera.", "look_away");
+      }
+    }, 2000); // Check every 2s instead of every frame
+    return () => clearInterval(checkInterval);
+  }, [isPracticing, mpActive]);
   const activeQuestions = isHrPhase ? hrQuestions : questions;
 
   // Save current question data before moving to next
