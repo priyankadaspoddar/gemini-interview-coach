@@ -657,6 +657,8 @@ const InterviewPage = () => {
               warning={activeWarning}
               tabSwitchCount={tabSwitchCountRef.current}
               lookAwayCount={lookAwayCountRef.current}
+              headTiltCount={headTiltCountRef.current}
+              erraticEyeCount={erraticEyeCountRef.current}
             />
           )}
         </div>
