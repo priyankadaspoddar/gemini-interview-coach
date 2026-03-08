@@ -313,16 +313,15 @@ const InterviewPage = () => {
       utterance.rate = 0.9;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
-      // Try to pick a professional-sounding voice
       const voices = window.speechSynthesis.getVoices();
-      const preferred = voices.find(v => /google.*us|samantha|daniel|karen|english/i.test(v.name)) || voices.find(v => v.lang.startsWith('en'));
-      if (preferred) utterance.voice = preferred;
+      const selected = voices.find(v => v.voiceURI === selectedVoiceURI);
+      if (selected) utterance.voice = selected;
       utterance.onstart = () => setIsSpeaking(true);
       utterance.onend = () => setIsSpeaking(false);
       utterance.onerror = () => setIsSpeaking(false);
       window.speechSynthesis.speak(utterance);
     }
-  }, []);
+  }, [selectedVoiceURI]);
 
   // Auto-speak question when it changes during practice
   useEffect(() => {
