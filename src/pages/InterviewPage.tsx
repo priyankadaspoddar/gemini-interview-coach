@@ -555,6 +555,7 @@ const InterviewPage = () => {
           erraticEyeMovements: erraticEyeCountRef.current,
           multipleFaces: multipleFaceCountRef.current,
           phoneDetections: phoneDetectCountRef.current,
+          screenShares: screenShareCountRef.current,
           warnings: cheatingWarnings,
         }
       );
