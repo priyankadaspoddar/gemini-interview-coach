@@ -57,7 +57,7 @@ interface AnalysisResult {
     tabSwitches: number;
     lookAways: number;
     headTilts: number;
-    erraticEyeMovements: number;
+    suspiciousGaze: number;
     multipleFaces: number;
     phoneDetections: number;
     screenShares: number;
@@ -116,7 +116,7 @@ const InterviewPage = () => {
   const lastLookAwayRef = useRef(0);
   const headTiltCountRef = useRef(0);
   const lastHeadTiltRef = useRef(0);
-  const erraticEyeCountRef = useRef(0);
+  const suspiciousGazeCountRef = useRef(0);
   const eyeHistoryRef = useRef<number[]>([]);
   const multipleFaceCountRef = useRef(0);
   const lastMultiFaceRef = useRef(0);
@@ -278,7 +278,7 @@ const InterviewPage = () => {
         showWarningRef.current("🔄 Suspicious head tilt detected. Keep your head straight and face the camera.", "head_tilt");
       }
 
-      // Erratic eye movement detection
+      // Suspicious gaze detection
       eyeHistoryRef.current.push(s.eyeContact);
       if (eyeHistoryRef.current.length > 5) eyeHistoryRef.current.shift();
       if (eyeHistoryRef.current.length >= 5) {
@@ -288,9 +288,9 @@ const InterviewPage = () => {
           if (Math.abs(vals[i] - vals[i - 1]) > 30) swings++;
         }
         if (swings >= 3) {
-          erraticEyeCountRef.current++;
+          suspiciousGazeCountRef.current++;
           eyeHistoryRef.current = [];
-          showWarningRef.current("👁️ Erratic eye movement detected. Focus on the camera.", "erratic_eye");
+          showWarningRef.current("👁️ Suspicious gaze pattern detected. Focus on the camera.", "suspicious_gaze");
         }
       }
 
@@ -602,7 +602,7 @@ const InterviewPage = () => {
           tabSwitches: tabSwitchCountRef.current,
           lookAways: lookAwayCountRef.current,
           headTilts: headTiltCountRef.current,
-          erraticEyeMovements: erraticEyeCountRef.current,
+          suspiciousGaze: suspiciousGazeCountRef.current,
           multipleFaces: multipleFaceCountRef.current,
           phoneDetections: phoneDetectCountRef.current,
           screenShares: screenShareCountRef.current,
@@ -788,7 +788,7 @@ const InterviewPage = () => {
               tabSwitchCount={tabSwitchCountRef.current}
               lookAwayCount={lookAwayCountRef.current}
               headTiltCount={headTiltCountRef.current}
-              erraticEyeCount={erraticEyeCountRef.current}
+              suspiciousGazeCount={suspiciousGazeCountRef.current}
               multipleFaceCount={multipleFaceCountRef.current}
               phoneDetectCount={phoneDetectCountRef.current}
               screenShareCount={screenShareCountRef.current}
@@ -1151,7 +1151,7 @@ const InterviewPage = () => {
                     { label: "Tab Switches", value: analysis.integrityAssessment.tabSwitches, critical: true },
                     { label: "Look-Aways", value: analysis.integrityAssessment.lookAways, critical: false },
                     { label: "Head Tilts", value: analysis.integrityAssessment.headTilts || 0, critical: false },
-                    { label: "Erratic Eye", value: analysis.integrityAssessment.erraticEyeMovements || 0, critical: true },
+                    { label: "Suspicious Gaze", value: analysis.integrityAssessment.suspiciousGaze || 0, critical: true },
                     { label: "Multiple Faces", value: analysis.integrityAssessment.multipleFaces || 0, critical: true },
                     { label: "Phone/Device", value: analysis.integrityAssessment.phoneDetections || 0, critical: true },
                     { label: "Screen Share", value: analysis.integrityAssessment.screenShares || 0, critical: true },

@@ -150,7 +150,7 @@ export async function analyzePresentationDirect(
   questions: { question: string }[],
   resumeText: string,
   apiKeyOverride?: string,
-  cheatingData?: { tabSwitches: number; lookAways: number; headTilts: number; erraticEyeMovements: number; multipleFaces: number; phoneDetections: number; screenShares: number; copyPastes: number; inactivity: number; warnings: { type: string; timestamp: number; question: number }[] }
+  cheatingData?: { tabSwitches: number; lookAways: number; headTilts: number; suspiciousGaze: number; multipleFaces: number; phoneDetections: number; screenShares: number; copyPastes: number; inactivity: number; warnings: { type: string; timestamp: number; question: number }[] }
 ): Promise<Record<string, unknown>> {
   const key = getKey(apiKeyOverride);
 
@@ -165,7 +165,7 @@ export async function analyzePresentationDirect(
   Tab switches detected: ${cheatingData.tabSwitches}
   Look-away warnings: ${cheatingData.lookAways}
   Head tilt flags: ${cheatingData.headTilts}
-  Erratic eye movements: ${cheatingData.erraticEyeMovements}
+  Suspicious gaze patterns: ${cheatingData.suspiciousGaze}
   Multiple faces detected: ${cheatingData.multipleFaces}
    Phone/device detected: ${cheatingData.phoneDetections}
    Screen share/recording: ${cheatingData.screenShares}
@@ -239,7 +239,7 @@ export async function analyzePresentationDirect(
       "tabSwitches": 0,
       "lookAways": 0,
       "headTilts": 0,
-      "erraticEyeMovements": 0,
+      "suspiciousGaze": 0,
       "multipleFaces": 0,
       "phoneDetections": 0,
       "screenShares": 0,
@@ -259,7 +259,7 @@ export async function analyzePresentationDirect(
   6. Scores are 0-100. Be intelligent, insightful, and official.
   7. The "nonVerbalAnalysis" section MUST contain genuine praise for good scores and constructive tips for weak areas. Reference actual numbers.
   8. Each questionBreakdown entry should include "emotionDuringAnswer" and "bodyLanguageNote" based on the mediaPipeScores for that question.
-  9. The "integrityAssessment" MUST reflect ALL 9 integrity signals (tab switches, look-aways, head tilts, erratic eye, multiple faces, phone detections, screen shares, copy-paste, inactivity). Copy the exact counts from the integrity monitoring data. If all counts are 0, riskLevel should be "None" with positive notes. Multiple faces or phone detections should increase severity significantly.`;
+  9. The "integrityAssessment" MUST reflect ALL 9 integrity signals (tab switches, look-aways, head tilts, suspicious gaze, multiple faces, phone detections, screen shares, copy-paste, inactivity). Copy the exact counts from the integrity monitoring data. If all counts are 0, riskLevel should be "None" with positive notes. Multiple faces or phone detections should increase severity significantly.`;
 
   const text = await callGroq(key, [
     { role: "system", content: "You are an expert recruiter and interview coach. Return comprehensive analysis in strict JSON format." },

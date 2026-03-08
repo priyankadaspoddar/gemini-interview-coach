@@ -12,7 +12,7 @@ interface LiveAnalysisProps {
   tabSwitchCount?: number;
   lookAwayCount?: number;
   headTiltCount?: number;
-  erraticEyeCount?: number;
+  suspiciousGazeCount?: number;
   multipleFaceCount?: number;
   phoneDetectCount?: number;
   screenShareCount?: number;
@@ -89,10 +89,10 @@ function MetricRow({ icon, label, value }: MetricRowProps) {
   );
 }
 
-export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLanguage, detectedEmotion = "Neutral", emotionConfidence = 0, warning, tabSwitchCount = 0, lookAwayCount = 0, headTiltCount = 0, erraticEyeCount = 0, multipleFaceCount = 0, phoneDetectCount = 0, screenShareCount = 0, copyPasteCount = 0, inactivityCount = 0 }: LiveAnalysisProps) {
+export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLanguage, detectedEmotion = "Neutral", emotionConfidence = 0, warning, tabSwitchCount = 0, lookAwayCount = 0, headTiltCount = 0, suspiciousGazeCount = 0, multipleFaceCount = 0, phoneDetectCount = 0, screenShareCount = 0, copyPasteCount = 0, inactivityCount = 0 }: LiveAnalysisProps) {
   const overall = Math.round((eyeContact + posture + expression + bodyLanguage) / 4);
   const emoji = EMOTION_EMOJI[detectedEmotion] || "😐";
-  const totalFlags = tabSwitchCount + lookAwayCount + headTiltCount + erraticEyeCount + multipleFaceCount + phoneDetectCount + screenShareCount + copyPasteCount + inactivityCount;
+  const totalFlags = tabSwitchCount + lookAwayCount + headTiltCount + suspiciousGazeCount + multipleFaceCount + phoneDetectCount + screenShareCount + copyPasteCount + inactivityCount;
 
   return (
     <>
@@ -139,8 +139,8 @@ export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLangu
             {headTiltCount > 0 && (
               <div className="text-muted-foreground">Head tilts: <span className="text-destructive font-mono">{headTiltCount}</span></div>
             )}
-            {erraticEyeCount > 0 && (
-              <div className="text-muted-foreground">Erratic eyes: <span className="text-destructive font-mono">{erraticEyeCount}</span></div>
+            {suspiciousGazeCount > 0 && (
+              <div className="text-muted-foreground">Suspicious gaze: <span className="text-destructive font-mono">{suspiciousGazeCount}</span></div>
             )}
             {multipleFaceCount > 0 && (
               <div className="text-muted-foreground">Multi-face: <span className="text-destructive font-mono">{multipleFaceCount}</span></div>

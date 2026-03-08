@@ -62,7 +62,7 @@ const algorithms = [
       "Track browser visibility changes (tab switch detection via Visibility API)",
       "Monitor eye contact via MediaPipe — flag sustained look-aways (<40% for 3s+)",
       "Detect suspicious head tilts (>8° sustained for 4s+)",
-      "Analyze erratic eye movement patterns (3+ rapid swings of 30%+ amplitude)",
+      "Detect suspicious gaze patterns (3+ rapid swings of 30%+ amplitude)",
       "Detect multiple faces in frame via FaceLandmarker (up to 4 faces tracked)",
       "Phone/device detection using EfficientDet-Lite0 ObjectDetector with bounding boxes",
       "Screen sharing/recording interception via getDisplayMedia API monkey-patching",
