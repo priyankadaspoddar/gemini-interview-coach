@@ -602,7 +602,7 @@ const InterviewPage = () => {
           tabSwitches: tabSwitchCountRef.current,
           lookAways: lookAwayCountRef.current,
           headTilts: headTiltCountRef.current,
-          erraticEyeMovements: erraticEyeCountRef.current,
+          suspiciousGaze: suspiciousGazeCountRef.current,
           multipleFaces: multipleFaceCountRef.current,
           phoneDetections: phoneDetectCountRef.current,
           screenShares: screenShareCountRef.current,
