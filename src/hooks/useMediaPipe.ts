@@ -87,9 +87,11 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const faceLandmarkerRef = useRef<any>(null);
   const poseLandmarkerRef = useRef<any>(null);
+  const objectDetectorRef = useRef<any>(null);
   const loadedRef = useRef(false);
   const loadingRef = useRef(false);
   const historyRef = useRef<MediaPipeScores[]>([]);
+  const objectDetectFrameRef = useRef(0);
 
   const loadMediaPipe = useCallback(async () => {
     if (loadedRef.current || loadingRef.current) return;
@@ -105,6 +107,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       );
 
       const { FaceLandmarker, PoseLandmarker, FilesetResolver } = vision;
+      const ObjectDetector = (vision as any).ObjectDetector;
 
       const filesetResolver = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
@@ -127,6 +130,17 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
         },
         runningMode: "VIDEO",
         numPoses: 2,
+      });
+
+      // Object detector for phone/device detection using EfficientDet-Lite0 (COCO classes include "cell phone")
+      objectDetectorRef.current = await ObjectDetector.createFromOptions(filesetResolver, {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/int8/1/efficientdet_lite0.tflite",
+          delegate: "GPU",
+        },
+        runningMode: "VIDEO",
+        scoreThreshold: 0.35,
+        maxResults: 5,
       });
 
       loadedRef.current = true;
@@ -218,14 +232,35 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
             const bodyLangRaw = clamp(50 + shoulderWidth * 100 - shoulderTilt * 200);
             newScores.bodyLanguage = emaSmooth(prev.bodyLanguage, bodyLangRaw);
 
-            // Phone detection: hand raised near face/ear level (wider detection radius)
-            const handNearFace = (leftWrist && dist(leftWrist, nose) < 0.35) ||
-                                 (rightWrist && dist(rightWrist, nose) < 0.35);
-            newScores.handNearFace = !!handNearFace;
+            // Keep hand-near-face as fallback heuristic
+            const handNearFace = (leftWrist && dist(leftWrist, nose) < 0.3) ||
+                                 (rightWrist && dist(rightWrist, nose) < 0.3);
+            if (handNearFace && !newScores.handNearFace) {
+              newScores.handNearFace = true;
+            }
           }
         }
       } catch (err) {
         // Silently ignore
+      }
+    }
+
+    // Object detection for phones/devices — run every 3rd frame to save perf
+    if (objectDetectorRef.current) {
+      objectDetectFrameRef.current++;
+      if (objectDetectFrameRef.current % 3 === 0) {
+        try {
+          const objResult = objectDetectorRef.current.detectForVideo(video, now + 2);
+          const PHONE_CLASSES = ["cell phone", "remote", "laptop", "book"];
+          const phoneDetected = objResult?.detections?.some((d: any) =>
+            d.categories?.some((c: any) => PHONE_CLASSES.includes(c.categoryName?.toLowerCase()))
+          );
+          if (phoneDetected) {
+            newScores.handNearFace = true;
+          }
+        } catch (err) {
+          // Silently ignore
+        }
       }
     }
 
