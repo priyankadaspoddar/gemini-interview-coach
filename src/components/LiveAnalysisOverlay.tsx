@@ -151,6 +151,12 @@ export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLangu
             {screenShareCount > 0 && (
               <div className="text-muted-foreground">Screen share: <span className="text-destructive font-mono">{screenShareCount}</span></div>
             )}
+            {copyPasteCount > 0 && (
+              <div className="text-muted-foreground">Copy/paste: <span className="text-destructive font-mono">{copyPasteCount}</span></div>
+            )}
+            {inactivityCount > 0 && (
+              <div className="text-muted-foreground">Inactivity: <span className="text-destructive font-mono">{inactivityCount}</span></div>
+            )}
           </div>
         )}
 

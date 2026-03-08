@@ -597,6 +597,8 @@ const InterviewPage = () => {
           multipleFaces: multipleFaceCountRef.current,
           phoneDetections: phoneDetectCountRef.current,
           screenShares: screenShareCountRef.current,
+          copyPastes: copyPasteCountRef.current,
+          inactivity: inactivityCountRef.current,
           warnings: cheatingWarnings,
         }
       );
