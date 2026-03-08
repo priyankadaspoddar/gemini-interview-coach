@@ -8,11 +8,8 @@
     <meta name="author" content="Resume Based Interview" />
     <link rel="icon" href="/placeholder.svg" />
 
-    <!-- Camera and microphone permissions -->
-    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()" />
-    
-    <!-- HTTPS context for camera access -->
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+    <!-- Camera and microphone permissions - allow self origin -->
+    <meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(self), geolocation=()" />
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Resume Based Interview" />
