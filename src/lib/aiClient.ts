@@ -167,8 +167,9 @@ export async function analyzePresentationDirect(
   Head tilt flags: ${cheatingData.headTilts}
   Erratic eye movements: ${cheatingData.erraticEyeMovements}
   Multiple faces detected: ${cheatingData.multipleFaces}
-  Phone/hand near face: ${cheatingData.phoneDetections}
-  Total integrity flags: ${cheatingData.warnings.length}
+   Phone/device detected: ${cheatingData.phoneDetections}
+   Screen share/recording: ${cheatingData.screenShares}
+   Total integrity flags: ${cheatingData.warnings.length}
   Warning details: ${JSON.stringify(cheatingData.warnings.map(w => ({ type: w.type, question: w.question })))}
   
   IMPORTANT: If there are integrity flags (tab switches or look-aways), you MUST:
