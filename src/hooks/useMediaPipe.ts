@@ -257,20 +257,36 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       if (objectDetectFrameRef.current % 3 === 0) {
         try {
           const objResult = objectDetectorRef.current.detectForVideo(video, now + 2);
-          const PHONE_CLASSES = ["cell phone", "remote", "laptop", "book"];
-          const phoneDetected = objResult?.detections?.some((d: any) =>
-            d.categories?.some((c: any) => PHONE_CLASSES.includes(c.categoryName?.toLowerCase()))
-          );
-          if (phoneDetected) {
-            newScores.handNearFace = true;
+          const PHONE_CLASSES = ["cell phone", "remote", "laptop"];
+          const detectedObjects: DetectedObject[] = [];
+          let phoneFound = false;
+
+          if (objResult?.detections) {
+            for (const d of objResult.detections) {
+              const cat = d.categories?.[0];
+              if (cat && PHONE_CLASSES.includes(cat.categoryName?.toLowerCase())) {
+                phoneFound = true;
+                const bb = d.boundingBox;
+                if (bb) {
+                  detectedObjects.push({
+                    label: cat.categoryName,
+                    score: Math.round(cat.score * 100),
+                    x: bb.originX / (video.videoWidth || 1),
+                    y: bb.originY / (video.videoHeight || 1),
+                    width: bb.width / (video.videoWidth || 1),
+                    height: bb.height / (video.videoHeight || 1),
+                  });
+                }
+              }
+            }
           }
+          newScores.phoneDetected = phoneFound;
+          newScores.detectedObjects = detectedObjects;
         } catch (err) {
           // Silently ignore
         }
       }
     }
-
-    scoresRef.current = newScores;
     historyRef.current.push({ ...newScores });
 
     if (historyRef.current.length > 600) {
