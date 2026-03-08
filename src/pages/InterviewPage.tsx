@@ -95,7 +95,8 @@ const InterviewPage = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const { scores: mpScores, isActive: mpActive, start: startMP, stop: stopMP, getAverageScores, resetHistory } = useMediaPipe(videoRef);
+  const { scores: mpScores, isActive: mpActive, isLoading: mpLoading, loadError: mpLoadError, start: startMP, stop: stopMP, getAverageScores, resetHistory } = useMediaPipe(videoRef);
+  const [mediaPipeReady, setMediaPipeReady] = useState(false);
 
   const isHrPhase = step === "hr-questions" || step === "hr-practice";
   const activeQuestions = isHrPhase ? hrQuestions : questions;
@@ -211,18 +212,32 @@ const InterviewPage = () => {
   }, [toast]);
 
   // Attach stream to video element when cameraOn changes
+  const startMPRef = useRef(startMP);
+  startMPRef.current = startMP;
+
   useEffect(() => {
-    if (cameraOn && videoRef.current && streamRef.current) {
-      videoRef.current.srcObject = streamRef.current;
-      videoRef.current.onloadedmetadata = () => {
-        videoRef.current?.play();
-        console.log("Video playing:", videoRef.current?.videoWidth, "x", videoRef.current?.videoHeight);
+    if (!cameraOn || !streamRef.current) return;
+
+    const attachStream = () => {
+      const video = videoRef.current;
+      if (!video) return;
+      
+      video.srcObject = streamRef.current;
+      video.onloadedmetadata = () => {
+        video.play().then(() => {
+          console.log("Video playing:", video.videoWidth, "x", video.videoHeight);
+          // Start MediaPipe after video is confirmed playing
+          startMPRef.current().then(() => {
+            setMediaPipeReady(true);
+          }).catch(console.error);
+        }).catch(console.error);
       };
-      // Start MediaPipe after video is ready
-      const timer = setTimeout(() => { startMP().catch(console.error); }, 800);
-      return () => clearTimeout(timer);
-    }
-  }, [cameraOn, startMP]);
+    };
+
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(attachStream, 200);
+    return () => clearTimeout(timer);
+  }, [cameraOn]);
 
   // Auto-start camera when entering practice steps
   useEffect(() => {
@@ -235,7 +250,9 @@ const InterviewPage = () => {
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
     setCameraOn(false);
+    setMediaPipeReady(false);
     if (isRecording) {
       recognitionRef.current?.stop();
       setIsRecording(false);
@@ -483,12 +500,27 @@ const InterviewPage = () => {
               <div className="text-center"><CameraOff className="h-12 w-12 mx-auto mb-2" /><p className="text-sm">Camera not active</p></div>
             </div>
           )}
+          {cameraOn && mpLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm z-10">
+              <div className="text-center space-y-3">
+                <Loader2 className="h-10 w-10 mx-auto animate-spin text-primary" />
+                <p className="text-sm font-medium text-foreground">Loading AI Vision Models...</p>
+                <p className="text-xs text-muted-foreground">Face & pose detection initializing</p>
+              </div>
+            </div>
+          )}
+          {mpLoadError && (
+            <div className="absolute bottom-3 left-3 right-3 bg-destructive/90 text-destructive-foreground rounded-lg p-2 text-xs z-10">
+              <AlertTriangle className="h-3 w-3 inline mr-1" /> {mpLoadError}
+            </div>
+          )}
           {mpActive && (
             <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm rounded-lg p-3 text-xs space-y-1.5 border border-border">
-              <div className="flex items-center gap-1.5 text-primary font-mono font-semibold"><Activity className="h-3 w-3" /> Live</div>
-              <div className="flex justify-between gap-4"><span className="text-muted-foreground">Eye</span><span className="font-mono">{Math.round(mpScores.eyeContact)}%</span></div>
+              <div className="flex items-center gap-1.5 text-primary font-mono font-semibold"><Activity className="h-3 w-3" /> Live Analysis</div>
+              <div className="flex justify-between gap-4"><span className="text-muted-foreground">Eye Contact</span><span className="font-mono">{Math.round(mpScores.eyeContact)}%</span></div>
               <div className="flex justify-between gap-4"><span className="text-muted-foreground">Posture</span><span className="font-mono">{Math.round(mpScores.posture)}%</span></div>
               <div className="flex justify-between gap-4"><span className="text-muted-foreground">Expression</span><span className="font-mono">{Math.round(mpScores.expression)}%</span></div>
+              <div className="flex justify-between gap-4"><span className="text-muted-foreground">Body Lang</span><span className="font-mono">{Math.round(mpScores.bodyLanguage)}%</span></div>
             </div>
           )}
         </div>
