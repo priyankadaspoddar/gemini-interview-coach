@@ -170,7 +170,7 @@ const detailedTechStack = [
     category: "AI & NLP Core",
     icon: Brain,
     description: "State-of-the-art inference engine for specialized interview question generation and reporting.",
-    features: ["Groq Llama-3 70B Model", "NER-KE Proprietary Algorithm", "Zero-Hallucination Guardrails", "Integrity Monitor v1.0"],
+    features: ["Groq Llama-3 70B Model", "NER-KE Proprietary Algorithm", "Zero-Hallucination Guardrails", "Integrity Monitor v2.0"],
     specs: { "API": "Groq Cloud", "Speed": "300 tokens/sec", "Architecture": "Transformer V2", "Logic": "Few-shot Prompting" }
   },
   {
