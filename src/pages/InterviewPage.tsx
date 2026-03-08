@@ -725,7 +725,7 @@ const InterviewPage = () => {
           {renderPracticeView({ qs: questions, phaseLabel: "Resume Round",
             onFinish: finishResumeRound,
             finishLabel: "Finish & Start HR Round",
-            finishIcon: <Users className="h-4 w-4" /> })}
+            finishIcon: (<Users className="h-4 w-4" />) })}
         )}
 
         {/* HR QUESTIONS */}
@@ -779,10 +779,10 @@ const InterviewPage = () => {
 
         {/* HR PRACTICE — analysis only after completing all 5 HR questions */}
         {step === "hr-practice" && (
-          <PracticeView qs={hrQuestions} phaseLabel="HR Round"
-            onFinish={finishAllAndAnalyze}
-            finishLabel={loading ? "Analyzing..." : "Finish & Analyze All"}
-            finishIcon={<BarChart3 className="h-4 w-4" />} />
+          {renderPracticeView({ qs: hrQuestions, phaseLabel: "HR Round",
+            onFinish: finishAllAndAnalyze,
+            finishLabel: loading ? "Analyzing..." : "Finish & Analyze All",
+            finishIcon: (<BarChart3 className="h-4 w-4" />) })}
         )}
 
         {/* RESULTS */}
