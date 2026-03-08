@@ -203,6 +203,8 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
           const leftShoulder = lm[11];
           const rightShoulder = lm[12];
           const nose = lm[0];
+          const leftWrist = lm[15];
+          const rightWrist = lm[16];
 
           if (leftShoulder && rightShoulder && nose) {
             const shoulderTilt = Math.abs(leftShoulder.y - rightShoulder.y);
@@ -215,6 +217,12 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
             const shoulderWidth = dist(leftShoulder, rightShoulder);
             const bodyLangRaw = clamp(50 + shoulderWidth * 100 - shoulderTilt * 200);
             newScores.bodyLanguage = emaSmooth(prev.bodyLanguage, bodyLangRaw);
+
+            // Phone detection: hand raised near face/ear level
+            const earY = nose.y;
+            const handNearFace = (leftWrist && dist(leftWrist, nose) < 0.2 && leftWrist.y < earY + 0.1) ||
+                                 (rightWrist && dist(rightWrist, nose) < 0.2 && rightWrist.y < earY + 0.1);
+            newScores.handNearFace = !!handNearFace;
           }
         }
       } catch (err) {
