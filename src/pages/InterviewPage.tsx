@@ -426,7 +426,12 @@ const InterviewPage = () => {
         finalScores,
         allQuestions,
         resumeText,
-        apiKeyInput || undefined
+        apiKeyOverride,
+        {
+          tabSwitches: tabSwitchCountRef.current,
+          lookAways: lookAwayCountRef.current,
+          warnings: cheatingWarnings,
+        }
       );
 
       // Calculate final duration
