@@ -493,14 +493,27 @@ const InterviewPage = () => {
       </div>
       <div className="rounded-xl border border-border bg-card p-6 glow-border">
         <div className="mb-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-primary font-mono">{phaseLabel} — Question {currentQ + 1} of {qs.length}</span>
-            <Button variant="ghost" size="sm" onClick={() => speakQuestion(qs[currentQ]?.question)} disabled={isSpeaking}
-              className="gap-1.5 text-xs text-primary hover:text-primary hover:bg-primary/10">
-              {isSpeaking ? <Loader2 className="h-3 w-3 animate-spin" /> : <Volume2 className="h-3 w-3" />}
-              {isSpeaking ? "Speaking..." : "Replay Voice"}
-            </Button>
-          </div>
+           <div className="flex items-center gap-2">
+              <span className="text-xs text-primary font-mono">{phaseLabel} — Question {currentQ + 1} of {qs.length}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedVoiceURI}
+                onChange={(e) => setSelectedVoiceURI(e.target.value)}
+                className="h-8 rounded-md border border-border bg-background px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring max-w-[180px]"
+              >
+                {availableVoices.map((v) => (
+                  <option key={v.voiceURI} value={v.voiceURI}>
+                    {v.name} ({v.lang})
+                  </option>
+                ))}
+              </select>
+              <Button variant="ghost" size="sm" onClick={() => speakQuestion(qs[currentQ]?.question)} disabled={isSpeaking}
+                className="gap-1.5 text-xs text-primary hover:text-primary hover:bg-primary/10">
+                {isSpeaking ? <Loader2 className="h-3 w-3 animate-spin" /> : <Volume2 className="h-3 w-3" />}
+                {isSpeaking ? "Speaking..." : "Replay"}
+              </Button>
+            </div>
           <p className="text-lg font-medium mt-1">{qs[currentQ]?.question}</p>
           {isSpeaking && (
             <div className="flex items-center gap-2 mt-2 text-xs text-primary">
