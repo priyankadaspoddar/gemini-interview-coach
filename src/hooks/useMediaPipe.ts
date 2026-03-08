@@ -232,10 +232,12 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
             const bodyLangRaw = clamp(50 + shoulderWidth * 100 - shoulderTilt * 200);
             newScores.bodyLanguage = emaSmooth(prev.bodyLanguage, bodyLangRaw);
 
-            // Phone detection: hand raised near face/ear level (wider detection radius)
-            const handNearFace = (leftWrist && dist(leftWrist, nose) < 0.35) ||
-                                 (rightWrist && dist(rightWrist, nose) < 0.35);
-            newScores.handNearFace = !!handNearFace;
+            // Keep hand-near-face as fallback heuristic
+            const handNearFace = (leftWrist && dist(leftWrist, nose) < 0.3) ||
+                                 (rightWrist && dist(rightWrist, nose) < 0.3);
+            if (handNearFace && !newScores.handNearFace) {
+              newScores.handNearFace = true;
+            }
           }
         }
       } catch (err) {
