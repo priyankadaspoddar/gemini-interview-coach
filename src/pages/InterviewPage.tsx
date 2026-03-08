@@ -56,6 +56,8 @@ interface AnalysisResult {
   integrityAssessment?: {
     tabSwitches: number;
     lookAways: number;
+    headTilts: number;
+    erraticEyeMovements: number;
     riskLevel: string;
     notes: string;
   };
