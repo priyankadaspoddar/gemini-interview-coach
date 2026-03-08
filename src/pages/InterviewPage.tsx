@@ -212,18 +212,32 @@ const InterviewPage = () => {
   }, [toast]);
 
   // Attach stream to video element when cameraOn changes
+  const startMPRef = useRef(startMP);
+  startMPRef.current = startMP;
+
   useEffect(() => {
-    if (cameraOn && videoRef.current && streamRef.current) {
-      videoRef.current.srcObject = streamRef.current;
-      videoRef.current.onloadedmetadata = () => {
-        videoRef.current?.play();
-        console.log("Video playing:", videoRef.current?.videoWidth, "x", videoRef.current?.videoHeight);
+    if (!cameraOn || !streamRef.current) return;
+
+    const attachStream = () => {
+      const video = videoRef.current;
+      if (!video) return;
+      
+      video.srcObject = streamRef.current;
+      video.onloadedmetadata = () => {
+        video.play().then(() => {
+          console.log("Video playing:", video.videoWidth, "x", video.videoHeight);
+          // Start MediaPipe after video is confirmed playing
+          startMPRef.current().then(() => {
+            setMediaPipeReady(true);
+          }).catch(console.error);
+        }).catch(console.error);
       };
-      // Start MediaPipe after video is ready
-      const timer = setTimeout(() => { startMP().catch(console.error); }, 800);
-      return () => clearTimeout(timer);
-    }
-  }, [cameraOn, startMP]);
+    };
+
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(attachStream, 200);
+    return () => clearTimeout(timer);
+  }, [cameraOn]);
 
   // Auto-start camera when entering practice steps
   useEffect(() => {
