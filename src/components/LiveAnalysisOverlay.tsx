@@ -139,8 +139,8 @@ export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLangu
             {headTiltCount > 0 && (
               <div className="text-muted-foreground">Head tilts: <span className="text-destructive font-mono">{headTiltCount}</span></div>
             )}
-            {erraticEyeCount > 0 && (
-              <div className="text-muted-foreground">Erratic eyes: <span className="text-destructive font-mono">{erraticEyeCount}</span></div>
+            {suspiciousGazeCount > 0 && (
+              <div className="text-muted-foreground">Suspicious gaze: <span className="text-destructive font-mono">{suspiciousGazeCount}</span></div>
             )}
             {multipleFaceCount > 0 && (
               <div className="text-muted-foreground">Multi-face: <span className="text-destructive font-mono">{multipleFaceCount}</span></div>
