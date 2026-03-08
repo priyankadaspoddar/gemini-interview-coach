@@ -690,6 +690,23 @@ const InterviewPage = () => {
               phoneDetectCount={phoneDetectCountRef.current}
             />
           )}
+          {/* Phone bounding boxes */}
+          {mpActive && mpScores.detectedObjects.length > 0 && mpScores.detectedObjects.map((obj, i) => (
+            <div
+              key={i}
+              className="absolute border-2 border-destructive rounded-md pointer-events-none z-30"
+              style={{
+                left: `${obj.x * 100}%`,
+                top: `${obj.y * 100}%`,
+                width: `${obj.width * 100}%`,
+                height: `${obj.height * 100}%`,
+              }}
+            >
+              <span className="absolute -top-5 left-0 bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">
+                📱 {obj.label} ({obj.score}%)
+              </span>
+            </div>
+          ))}
         </div>
 
         {transcript && (
