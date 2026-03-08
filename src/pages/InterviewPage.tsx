@@ -520,13 +520,12 @@ const InterviewPage = () => {
             </div>
           )}
           {mpActive && (
-            <div className="absolute top-3 right-3 bg-background/80 backdrop-blur-sm rounded-lg p-3 text-xs space-y-1.5 border border-border">
-              <div className="flex items-center gap-1.5 text-primary font-mono font-semibold"><Activity className="h-3 w-3" /> Live Analysis</div>
-              <div className="flex justify-between gap-4"><span className="text-muted-foreground">Eye Contact</span><span className="font-mono">{Math.round(mpScores.eyeContact)}%</span></div>
-              <div className="flex justify-between gap-4"><span className="text-muted-foreground">Posture</span><span className="font-mono">{Math.round(mpScores.posture)}%</span></div>
-              <div className="flex justify-between gap-4"><span className="text-muted-foreground">Expression</span><span className="font-mono">{Math.round(mpScores.expression)}%</span></div>
-              <div className="flex justify-between gap-4"><span className="text-muted-foreground">Body Lang</span><span className="font-mono">{Math.round(mpScores.bodyLanguage)}%</span></div>
-            </div>
+            <LiveAnalysisOverlay
+              eyeContact={mpScores.eyeContact}
+              posture={mpScores.posture}
+              expression={mpScores.expression}
+              bodyLanguage={mpScores.bodyLanguage}
+            />
           )}
         </div>
 
