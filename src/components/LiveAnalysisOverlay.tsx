@@ -11,6 +11,8 @@ interface LiveAnalysisProps {
   warning?: string | null;
   tabSwitchCount?: number;
   lookAwayCount?: number;
+  headTiltCount?: number;
+  erraticEyeCount?: number;
 }
 
 function getScoreColor(score: number) {
