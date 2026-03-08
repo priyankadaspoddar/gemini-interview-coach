@@ -149,6 +149,8 @@ const InterviewPage = () => {
 
   const { scores: mpScores, isActive: mpActive, isLoading: mpLoading, loadError: mpLoadError, start: startMP, stop: stopMP, getAverageScores, resetHistory } = useMediaPipe(videoRef);
   const [mediaPipeReady, setMediaPipeReady] = useState(false);
+  const mpScoresRef = useRef(mpScores);
+  mpScoresRef.current = mpScores;
 
   const isHrPhase = step === "hr-questions" || step === "hr-practice";
   const isPracticing = step === "practice" || step === "hr-practice";
