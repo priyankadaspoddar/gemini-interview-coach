@@ -152,8 +152,8 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
               delegate: "GPU",
             },
             runningMode: "VIDEO",
-            scoreThreshold: 0.3,
-            maxResults: 5,
+            scoreThreshold: 0.2,
+            maxResults: 10,
           });
           console.log("ObjectDetector loaded successfully");
         } else {
