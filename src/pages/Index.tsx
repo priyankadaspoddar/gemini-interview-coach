@@ -55,17 +55,20 @@ const algorithms = [
   },
   {
     icon: Shield,
-    title: "Integrity Monitor v1.0",
+    title: "Integrity Monitor v2.0",
     subtitle: "Anti-Cheating & Behavioral Anomaly Detection",
-    description: "Multi-signal cheating detection system that monitors tab switches, gaze direction, head orientation, erratic eye movements, multiple faces, and phone usage in real-time to ensure interview authenticity.",
+    description: "Comprehensive 9-signal integrity system combining browser monitoring, computer vision object detection, and behavioral analysis to ensure interview authenticity.",
     steps: [
-      "Track browser visibility changes (tab switch detection)",
-      "Monitor eye contact via MediaPipe — flag sustained look-aways (>5s below 25%)",
-      "Detect suspicious head tilts (>15° sustained for 6s+)",
+      "Track browser visibility changes (tab switch detection via Visibility API)",
+      "Monitor eye contact via MediaPipe — flag sustained look-aways (<40% for 3s+)",
+      "Detect suspicious head tilts (>8° sustained for 4s+)",
       "Analyze erratic eye movement patterns (3+ rapid swings of 30%+ amplitude)",
-      "Detect multiple faces in frame (up to 4 faces tracked simultaneously)",
-      "Flag hand-near-face posture as potential phone usage via pose landmarks",
-      "Compile integrity risk assessment into final recruiter report",
+      "Detect multiple faces in frame via FaceLandmarker (up to 4 faces tracked)",
+      "Phone/device detection using EfficientDet-Lite0 ObjectDetector with bounding boxes",
+      "Screen sharing/recording interception via getDisplayMedia API monkey-patching",
+      "Copy-paste detection — flags clipboard copy & paste events during interview",
+      "Camera freeze & inactivity detection — flags <0.5 score variance over 15s",
+      "Compile 9-metric integrity risk assessment into final recruiter report",
     ],
     color: "accent",
   },
@@ -153,7 +156,7 @@ const detailedTechStack = [
     category: "Computer Vision",
     icon: Eye,
     description: "Advanced facial analysis and gesture recognition running directly in the browser.",
-    features: ["FACS (Facial Action Coding System)", "MediaPipe Face Mesh", "Micro-expression Detection", "Posture & Head Tilt Tracking"],
+    features: ["FACS (Facial Action Coding System)", "MediaPipe Face Mesh", "EfficientDet-Lite0 ObjectDetector", "Posture & Head Tilt Tracking"],
     specs: { "Inference": "GPU Accelerated", "Latency": "< 30ms", "Markers": "468 3D Points", "Accuracy": "94.2%" }
   },
   {
@@ -167,7 +170,7 @@ const detailedTechStack = [
     category: "AI & NLP Core",
     icon: Brain,
     description: "State-of-the-art inference engine for specialized interview question generation and reporting.",
-    features: ["Groq Llama-3 70B Model", "NER-KE Proprietary Algorithm", "Zero-Hallucination Guardrails", "Integrity Monitor v1.0"],
+    features: ["Groq Llama-3 70B Model", "NER-KE Proprietary Algorithm", "Zero-Hallucination Guardrails", "Integrity Monitor v2.0"],
     specs: { "API": "Groq Cloud", "Speed": "300 tokens/sec", "Architecture": "Transformer V2", "Logic": "Few-shot Prompting" }
   },
   {
@@ -643,7 +646,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          <p>Built with Groq AI • NER-KE Algorithm v2.0 • FACS Vision Analysis • Integrity Monitor v1.0</p>
+          <p>Built with Groq AI • NER-KE Algorithm v2.0 • FACS Vision Analysis • Integrity Monitor v2.0 • EfficientDet ObjectDetector</p>
         </div>
       </footer>
     </div>
