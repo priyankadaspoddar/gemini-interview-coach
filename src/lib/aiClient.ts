@@ -165,7 +165,7 @@ export async function analyzePresentationDirect(
   Tab switches detected: ${cheatingData.tabSwitches}
   Look-away warnings: ${cheatingData.lookAways}
   Head tilt flags: ${cheatingData.headTilts}
-  Erratic eye movements: ${cheatingData.erraticEyeMovements}
+  Suspicious gaze patterns: ${cheatingData.suspiciousGaze}
   Multiple faces detected: ${cheatingData.multipleFaces}
    Phone/device detected: ${cheatingData.phoneDetections}
    Screen share/recording: ${cheatingData.screenShares}
