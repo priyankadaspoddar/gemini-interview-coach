@@ -106,7 +106,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs"
       );
 
-      const { FaceLandmarker, PoseLandmarker, FilesetResolver } = vision;
+      const { FaceLandmarker, PoseLandmarker, ObjectDetector, FilesetResolver } = vision;
 
       const filesetResolver = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
@@ -129,6 +129,17 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
         },
         runningMode: "VIDEO",
         numPoses: 2,
+      });
+
+      // Object detector for phone/device detection using EfficientDet-Lite0 (COCO classes include "cell phone")
+      objectDetectorRef.current = await ObjectDetector.createFromOptions(filesetResolver, {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/int8/1/efficientdet_lite0.tflite",
+          delegate: "GPU",
+        },
+        runningMode: "VIDEO",
+        scoreThreshold: 0.35,
+        maxResults: 5,
       });
 
       loadedRef.current = true;
