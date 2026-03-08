@@ -681,6 +681,8 @@ const InterviewPage = () => {
               lookAwayCount={lookAwayCountRef.current}
               headTiltCount={headTiltCountRef.current}
               erraticEyeCount={erraticEyeCountRef.current}
+              multipleFaceCount={multipleFaceCountRef.current}
+              phoneDetectCount={phoneDetectCountRef.current}
             />
           )}
         </div>
