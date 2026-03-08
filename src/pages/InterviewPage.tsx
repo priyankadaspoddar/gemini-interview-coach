@@ -307,8 +307,19 @@ const InterviewPage = () => {
         phoneDetectCountRef.current++;
         showWarningRef.current("📱 Phone or device detected — keep devices away during the interview.", "phone_detect");
       }
-    }, 2000);
-    return () => clearInterval(checkInterval);
+
+      // Inactivity / camera freeze detection
+      if (prevFrameScoresRef.current) {
+        const eyeDiff = Math.abs(s.eyeContact - prevFrameScoresRef.current.eye);
+        const postureDiff = Math.abs(s.posture - prevFrameScoresRef.current.posture);
+        // If scores barely change for 15+ seconds, flag as frozen/inactive
+        if (eyeDiff < 0.5 && postureDiff < 0.5 && now - lastInactivityRef.current > 15000) {
+          lastInactivityRef.current = now;
+          inactivityCountRef.current++;
+          showWarningRef.current("⏸️ Camera appears frozen or candidate is inactive. Please move to confirm presence.", "inactivity");
+        }
+      }
+      prevFrameScoresRef.current = { eye: s.eyeContact, posture: s.posture };
   }, [isPracticing, mpActive]);
   const activeQuestions = isHrPhase ? hrQuestions : questions;
 
