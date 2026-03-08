@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Upload, FileText, Loader2, ArrowLeft, Video, Mic, MicOff, Camera, CameraOff, ChevronRight, Eye, BarChart3, Activity, Brain, Target, AlertTriangle, CheckCircle2, TrendingUp, SkipForward, Download, Users, Send, MessageCircle, BookOpen, Database, Volume2 } from "lucide-react";
+import { Upload, FileText, Loader2, ArrowLeft, Video, Mic, MicOff, Camera, CameraOff, ChevronRight, Eye, BarChart3, Activity, Brain, Target, AlertTriangle, CheckCircle2, TrendingUp, SkipForward, Download, Users, Send, MessageCircle, BookOpen, Database, Volume2, Shield, ShieldAlert, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -31,6 +31,7 @@ interface AnalysisResult {
   vision: {
     eyeContact: number; posture: number; expression: number; bodyLanguage: number;
     detectedEmotion?: string; gestureType?: string; postureType?: string; feedback?: string;
+    emotionBreakdown?: Record<string, number>;
   };
   voice: {
     clarity: number; pace: number; tone: number; engagement: number;
@@ -42,10 +43,22 @@ interface AnalysisResult {
   topStrengths?: string[];
   topImprovements?: string[];
   algorithmNotes?: { facsUnitsDetected?: string; emaSmoothingApplied?: boolean; mediaPipeConfidence?: string; voicePatternType?: string };
-  questionBreakdown?: { questionNumber: number; userAnswer: string; idealAnswer: string; score: number; feedback: string }[];
+  questionBreakdown?: { questionNumber: number; userAnswer: string; idealAnswer: string; score: number; feedback: string; emotionDuringAnswer?: string; bodyLanguageNote?: string }[];
   metadata?: { avgResponseLength: number; fillerWordCount: number; confidenceScore: number };
   resumeAlignment?: { skillsInResume: string[]; skillsDemonstrated: string[]; alignmentPercentage: number };
   recruiterView?: { shortlist: boolean; hireRecommendation: string; suitableRoles: string[] };
+  nonVerbalAnalysis?: {
+    overallPresence: string;
+    emotionalIntelligence: string;
+    strengthPraises: string[];
+    improvementTips: string[];
+  };
+  integrityAssessment?: {
+    tabSwitches: number;
+    lookAways: number;
+    riskLevel: string;
+    notes: string;
+  };
 }
 
 type Step = "upload" | "questions" | "resume-tips" | "practice" | "hr-questions" | "hr-tips" | "hr-practice" | "results";
@@ -923,6 +936,111 @@ const InterviewPage = () => {
               </div>
             )}
 
+            {/* Integrity Assessment */}
+            {analysis.integrityAssessment && (
+              <div className={`rounded-xl border p-6 space-y-4 ${
+                analysis.integrityAssessment.riskLevel === "None" 
+                  ? "border-emerald-500/30 bg-emerald-500/5" 
+                  : analysis.integrityAssessment.riskLevel === "Low"
+                    ? "border-amber-500/30 bg-amber-500/5"
+                    : "border-destructive/30 bg-destructive/5"
+              }`}>
+                <div className="flex justify-between items-center">
+                  <h3 className="font-bold flex items-center gap-2 text-lg">
+                    <Shield className="h-5 w-5" /> Interview Integrity
+                  </h3>
+                  <div className={`px-4 py-1.5 rounded-full text-sm font-bold ${
+                    analysis.integrityAssessment.riskLevel === "None"
+                      ? "bg-emerald-500/20 text-emerald-400"
+                      : analysis.integrityAssessment.riskLevel === "Low"
+                        ? "bg-amber-500/20 text-amber-400"
+                        : "bg-destructive/20 text-destructive"
+                  }`}>
+                    {analysis.integrityAssessment.riskLevel === "None" ? "✓ Clean" : `⚠ ${analysis.integrityAssessment.riskLevel} Risk`}
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-lg bg-card border border-border text-center">
+                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Tab Switches</span>
+                    <p className={`text-2xl font-bold font-mono ${analysis.integrityAssessment.tabSwitches === 0 ? "text-emerald-400" : "text-destructive"}`}>
+                      {analysis.integrityAssessment.tabSwitches}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-card border border-border text-center">
+                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Look-Aways</span>
+                    <p className={`text-2xl font-bold font-mono ${analysis.integrityAssessment.lookAways === 0 ? "text-emerald-400" : "text-amber-400"}`}>
+                      {analysis.integrityAssessment.lookAways}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-card border border-border text-center">
+                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Risk Level</span>
+                    <p className={`text-2xl font-bold ${
+                      analysis.integrityAssessment.riskLevel === "None" ? "text-emerald-400" 
+                        : analysis.integrityAssessment.riskLevel === "Low" ? "text-amber-400" : "text-destructive"
+                    }`}>
+                      {analysis.integrityAssessment.riskLevel}
+                    </p>
+                  </div>
+                </div>
+                {analysis.integrityAssessment.notes && (
+                  <p className="text-sm text-muted-foreground border-t border-border pt-3">{analysis.integrityAssessment.notes}</p>
+                )}
+              </div>
+            )}
+
+            {/* Non-Verbal Analysis */}
+            {analysis.nonVerbalAnalysis && (
+              <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+                <h3 className="font-semibold mb-2 flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> Non-Verbal Communication Analysis</h3>
+                {analysis.nonVerbalAnalysis.overallPresence && (
+                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/20">
+                    <span className="text-xs text-primary uppercase font-semibold block mb-1">Overall Presence</span>
+                    <p className="text-sm text-muted-foreground">{analysis.nonVerbalAnalysis.overallPresence}</p>
+                  </div>
+                )}
+                {analysis.nonVerbalAnalysis.emotionalIntelligence && (
+                  <div className="p-4 rounded-lg bg-accent/5 border border-accent/20">
+                    <span className="text-xs text-accent uppercase font-semibold block mb-1">Emotional Intelligence</span>
+                    <p className="text-sm text-muted-foreground">{analysis.nonVerbalAnalysis.emotionalIntelligence}</p>
+                  </div>
+                )}
+                {analysis.vision.emotionBreakdown && Object.keys(analysis.vision.emotionBreakdown).length > 0 && (
+                  <div className="p-4 rounded-lg bg-secondary/30 border border-border">
+                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-2">Emotion Breakdown</span>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(analysis.vision.emotionBreakdown).map(([emotion, pct]) => (
+                        <span key={emotion} className="px-2.5 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                          {emotion}: {pct}%
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {analysis.nonVerbalAnalysis.strengthPraises?.length > 0 && (
+                    <div className="p-4 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+                      <span className="text-xs text-emerald-400 uppercase font-semibold block mb-2">🎉 Praised</span>
+                      <ul className="space-y-1.5">
+                        {analysis.nonVerbalAnalysis.strengthPraises.map((p, i) => (
+                          <li key={i} className="text-sm text-muted-foreground flex gap-2"><span className="text-emerald-400">✓</span>{p}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {analysis.nonVerbalAnalysis.improvementTips?.length > 0 && (
+                    <div className="p-4 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                      <span className="text-xs text-amber-400 uppercase font-semibold block mb-2">💡 Tips</span>
+                      <ul className="space-y-1.5">
+                        {analysis.nonVerbalAnalysis.improvementTips.map((t, i) => (
+                          <li key={i} className="text-sm text-muted-foreground flex gap-2"><span className="text-amber-400">→</span>{t}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {analysis.summary && (
               <div className="rounded-xl border border-border bg-card p-6">
                 <h3 className="font-semibold mb-3 flex items-center gap-2"><Target className="h-5 w-5 text-primary" /> Performance Summary</h3>
@@ -1056,6 +1174,16 @@ const InterviewPage = () => {
                         <div className="mt-4 pt-4 border-t border-border text-sm text-muted-foreground flex gap-2">
                           <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
                           <span>{q.feedback}</span>
+                        </div>
+                      )}
+                      {(q.emotionDuringAnswer || q.bodyLanguageNote) && (
+                        <div className="mt-3 flex flex-wrap gap-3 text-xs">
+                          {q.emotionDuringAnswer && (
+                            <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary">😊 Emotion: {q.emotionDuringAnswer}</span>
+                          )}
+                          {q.bodyLanguageNote && (
+                            <span className="px-2.5 py-1 rounded-full bg-accent/10 text-accent">🧍 {q.bodyLanguageNote}</span>
+                          )}
                         </div>
                       )}
                     </div>
