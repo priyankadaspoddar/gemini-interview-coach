@@ -1,4 +1,4 @@
-import { FileText, Brain, Eye, Mic, ArrowRight, Upload, Sparkles, Shield, Zap, BookOpen, Layout, Database, CheckCircle, GitBranch, BarChart2, FileOutput, UserCheck, Cpu, Settings2 } from "lucide-react";
+import { FileText, Brain, Eye, Mic, ArrowRight, Upload, Sparkles, Shield, Zap, BookOpen, Layout, Database, CheckCircle, GitBranch, BarChart2, FileOutput, UserCheck, Cpu, Settings2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -54,18 +54,32 @@ const algorithms = [
     color: "primary",
   },
   {
+    icon: Shield,
+    title: "Integrity Monitor v1.0",
+    subtitle: "Anti-Cheating & Behavioral Anomaly Detection",
+    description: "Multi-signal cheating detection system that monitors tab switches, gaze direction, head orientation, and erratic eye movements in real-time to ensure interview authenticity.",
+    steps: [
+      "Track browser visibility changes (tab switch detection)",
+      "Monitor eye contact via MediaPipe — flag sustained look-aways (>5s below 25%)",
+      "Detect suspicious head tilts (>15° sustained for 6s+)",
+      "Analyze erratic eye movement patterns (3+ rapid swings of 30%+ amplitude)",
+      "Compile integrity risk assessment into final recruiter report",
+    ],
+    color: "accent",
+  },
+  {
     icon: Sparkles,
     title: "Intelligence Reporting",
     subtitle: "Professional Verdict & Analytics",
-    description: "Synthesizes verbal data and resume content to provide high-level recruitment analytics and alignment scores.",
+    description: "Synthesizes verbal data, non-verbal cues, and integrity metrics to provide high-level recruitment analytics and alignment scores.",
     steps: [
       "Map demonstrated skills to resume keywords",
       "Calculate alignment percentage and gap analysis",
       "Detect confidence trends and delivery metadata",
-      "Provide recruiter shortlist verdict (Yes/No)",
+      "Factor integrity flags into recruiter verdict",
       "Suggest suitable industry roles based on performance",
     ],
-    color: "accent",
+    color: "primary",
   }
 ];
 
@@ -137,7 +151,7 @@ const detailedTechStack = [
     category: "Computer Vision",
     icon: Eye,
     description: "Advanced facial analysis and gesture recognition running directly in the browser.",
-    features: ["FACS (Facial Action Coding System)", "MediaPipe Face Mesh", "Micro-expression Detection", "Posture Alignment Tracking"],
+    features: ["FACS (Facial Action Coding System)", "MediaPipe Face Mesh", "Micro-expression Detection", "Posture & Head Tilt Tracking"],
     specs: { "Inference": "GPU Accelerated", "Latency": "< 30ms", "Markers": "468 3D Points", "Accuracy": "94.2%" }
   },
   {
@@ -151,7 +165,7 @@ const detailedTechStack = [
     category: "AI & NLP Core",
     icon: Brain,
     description: "State-of-the-art inference engine for specialized interview question generation and reporting.",
-    features: ["Groq Llama-3 70B Model", "NER-KE Proprietary Algorithm", "Zero-Hallucination Guardrails", "Context-Aware Reasoning"],
+    features: ["Groq Llama-3 70B Model", "NER-KE Proprietary Algorithm", "Zero-Hallucination Guardrails", "Integrity Monitor v1.0"],
     specs: { "API": "Groq Cloud", "Speed": "300 tokens/sec", "Architecture": "Transformer V2", "Logic": "Few-shot Prompting" }
   },
   {
@@ -627,7 +641,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="container mx-auto px-6 text-center text-sm text-muted-foreground">
-          <p>Built with Groq AI • NER-KE Algorithm v2.0 • FACS Vision Analysis</p>
+          <p>Built with Groq AI • NER-KE Algorithm v2.0 • FACS Vision Analysis • Integrity Monitor v1.0</p>
         </div>
       </footer>
     </div>
