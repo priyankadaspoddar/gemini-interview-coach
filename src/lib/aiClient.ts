@@ -238,8 +238,15 @@ export async function analyzePresentationDirect(
     "integrityAssessment": {
       "tabSwitches": 0,
       "lookAways": 0,
+      "headTilts": 0,
+      "erraticEyeMovements": 0,
+      "multipleFaces": 0,
+      "phoneDetections": 0,
+      "screenShares": 0,
+      "copyPastes": 0,
+      "inactivity": 0,
       "riskLevel": "None/Low/Medium/High",
-      "notes": "assessment of candidate's focus and potential integrity concerns"
+      "notes": "comprehensive assessment of all 9 integrity signals"
     }
   }
   
