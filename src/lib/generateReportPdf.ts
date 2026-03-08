@@ -9,6 +9,8 @@ interface QuestionBreakdownItem {
   idealAnswer: string;
   score: number;
   feedback: string;
+  emotionDuringAnswer?: string;
+  bodyLanguageNote?: string;
 }
 
 interface AnalysisResult {
@@ -23,6 +25,26 @@ interface AnalysisResult {
   resumeAlignment?: { skillsInResume: string[]; skillsDemonstrated: string[]; alignmentPercentage: number };
   recruiterView?: { shortlist: boolean; hireRecommendation: string; suitableRoles: string[] };
   questionBreakdown?: QuestionBreakdownItem[];
+  nonVerbalAnalysis?: {
+    overallPresence: string;
+    emotionalIntelligence: string;
+    strengthPraises: string[];
+    improvementTips: string[];
+  };
+  integrityAssessment?: {
+    tabSwitches: number;
+    lookAways: number;
+    headTilts: number;
+    suspiciousGaze: number;
+    multipleFaces: number;
+    phoneDetections: number;
+    screenShares: number;
+    copyPastes: number;
+    inactivity: number;
+    riskLevel: string;
+    notes: string;
+  };
+  algorithmNotes?: { facsUnitsDetected?: string; emaSmoothingApplied?: boolean; mediaPipeConfidence?: string; voicePatternType?: string };
 }
 
 interface Question {
@@ -58,7 +80,7 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
   doc.setTextColor(120);
   doc.text(new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }), pw / 2, y, { align: "center" });
   y += 4;
-  doc.text("Powered by Groq AI + MediaPipe EMA Analysis", pw / 2, y, { align: "center" });
+  doc.text("Powered by Groq AI + MediaPipe EMA + Integrity Monitor v2.0", pw / 2, y, { align: "center" });
   doc.setTextColor(0);
   y += 15;
 
@@ -70,11 +92,11 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
   y += 8;
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text(`Interview Type: Resume + HR Mock`, 15, y);
-  doc.text(`Difficulty Level: AI Adaptive`, pw / 2, y);
+  doc.text("Interview Type: Resume + HR Mock", 15, y);
+  doc.text("Precision Difficulty Scaling: AI-Driven", pw / 2, y);
   y += 6;
   doc.text(`Date & Time: ${new Date().toLocaleString()}`, 15, y);
-  doc.text(`Location: Remote Web Client`, pw / 2, y);
+  doc.text("Location: Remote Web Client", pw / 2, y);
   y += 12;
 
   // Overall Score
@@ -168,6 +190,8 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
       doc.setFont("helvetica", "italic");
       doc.setFontSize(8);
       doc.text(`Extracted: ${analysis.resumeAlignment.skillsInResume?.slice(0, 8).join(", ")}...`, 20, y);
+      y += 5;
+      doc.text(`Demonstrated: ${analysis.resumeAlignment.skillsDemonstrated?.slice(0, 8).join(", ")}...`, 20, y);
       y += 10;
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
@@ -186,10 +210,8 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
     scores.forEach(([label, value]) => {
       checkPage(8);
       doc.text(label, 20, y);
-      // Draw bar background
       doc.setFillColor(220, 220, 220);
       doc.rect(70, y - 3, 80, 4, "F");
-      // Draw bar fill
       const r = value >= 70 ? 34 : value >= 50 ? 245 : 239;
       const g = value >= 70 ? 197 : value >= 50 ? 158 : 68;
       const b = value >= 70 ? 94 : value >= 50 ? 11 : 68;
@@ -231,6 +253,209 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
     ], analysis.content.feedback);
   }
 
+  // ─── Non-Verbal Communication Analysis ───
+  if (analysis.nonVerbalAnalysis) {
+    checkPage(50);
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("Non-Verbal Communication Analysis", 15, y);
+    y += 9;
+
+    if (analysis.nonVerbalAnalysis.overallPresence) {
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(60, 60, 180);
+      doc.text("OVERALL PRESENCE", 20, y);
+      doc.setTextColor(0);
+      y += 5;
+      doc.setFont("helvetica", "normal");
+      const lines = doc.splitTextToSize(analysis.nonVerbalAnalysis.overallPresence, pw - 40);
+      checkPage(lines.length * 4.5 + 4);
+      doc.text(lines, 22, y);
+      y += lines.length * 4.5 + 4;
+    }
+
+    if (analysis.nonVerbalAnalysis.emotionalIntelligence) {
+      checkPage(15);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(100, 60, 150);
+      doc.text("EMOTIONAL INTELLIGENCE", 20, y);
+      doc.setTextColor(0);
+      y += 5;
+      doc.setFont("helvetica", "normal");
+      const lines = doc.splitTextToSize(analysis.nonVerbalAnalysis.emotionalIntelligence, pw - 40);
+      checkPage(lines.length * 4.5 + 4);
+      doc.text(lines, 22, y);
+      y += lines.length * 4.5 + 4;
+    }
+
+    if (analysis.nonVerbalAnalysis.strengthPraises?.length) {
+      checkPage(15);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(34, 197, 94);
+      doc.text("PRAISED", 20, y);
+      doc.setTextColor(0);
+      y += 5;
+      doc.setFont("helvetica", "normal");
+      analysis.nonVerbalAnalysis.strengthPraises.forEach(p => {
+        const lines = doc.splitTextToSize(`✓ ${p}`, pw - 45);
+        checkPage(lines.length * 4.5 + 2);
+        doc.text(lines, 24, y);
+        y += lines.length * 4.5 + 2;
+      });
+      y += 3;
+    }
+
+    if (analysis.nonVerbalAnalysis.improvementTips?.length) {
+      checkPage(15);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(245, 158, 11);
+      doc.text("IMPROVEMENT TIPS", 20, y);
+      doc.setTextColor(0);
+      y += 5;
+      doc.setFont("helvetica", "normal");
+      analysis.nonVerbalAnalysis.improvementTips.forEach(t => {
+        const lines = doc.splitTextToSize(`→ ${t}`, pw - 45);
+        checkPage(lines.length * 4.5 + 2);
+        doc.text(lines, 24, y);
+        y += lines.length * 4.5 + 2;
+      });
+      y += 3;
+    }
+    y += 5;
+  }
+
+  // ─── Integrity Assessment (9 Signals) ───
+  if (analysis.integrityAssessment) {
+    checkPage(60);
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text("Integrity Assessment", 15, y);
+
+    // Risk level badge
+    const risk = analysis.integrityAssessment.riskLevel || "Unknown";
+    const isClean = risk === "None";
+    const isLow = risk === "Low";
+    doc.setFontSize(10);
+    if (isClean) doc.setTextColor(34, 197, 94);
+    else if (isLow) doc.setTextColor(245, 158, 11);
+    else doc.setTextColor(239, 68, 68);
+    doc.text(isClean ? "Clean" : `${risk} Risk`, pw - 20, y, { align: "right" });
+    doc.setTextColor(0);
+    y += 10;
+
+    // 9-signal grid (3 columns × 3 rows)
+    const signals: [string, number][] = [
+      ["Tab Switches", analysis.integrityAssessment.tabSwitches || 0],
+      ["Look-Aways", analysis.integrityAssessment.lookAways || 0],
+      ["Head Tilts", analysis.integrityAssessment.headTilts || 0],
+      ["Suspicious Gaze", analysis.integrityAssessment.suspiciousGaze || 0],
+      ["Multiple Faces", analysis.integrityAssessment.multipleFaces || 0],
+      ["Phone/Device", analysis.integrityAssessment.phoneDetections || 0],
+      ["Screen Share", analysis.integrityAssessment.screenShares || 0],
+      ["Copy/Paste", analysis.integrityAssessment.copyPastes || 0],
+      ["Inactivity", analysis.integrityAssessment.inactivity || 0],
+    ];
+
+    doc.setFontSize(9);
+    const colW = (pw - 40) / 3;
+    for (let row = 0; row < 3; row++) {
+      checkPage(14);
+      for (let col = 0; col < 3; col++) {
+        const idx = row * 3 + col;
+        const [label, value] = signals[idx];
+        const x = 18 + col * colW;
+
+        // Background box
+        if (value > 0) {
+          doc.setFillColor(255, 240, 240);
+        } else {
+          doc.setFillColor(240, 255, 240);
+        }
+        doc.roundedRect(x, y, colW - 4, 12, 2, 2, "F");
+
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100);
+        doc.text(label, x + 3, y + 5);
+        doc.setFont("helvetica", "bold");
+        if (value > 0) doc.setTextColor(239, 68, 68);
+        else doc.setTextColor(34, 197, 94);
+        doc.text(`${value}`, x + colW - 10, y + 5);
+        doc.setTextColor(0);
+      }
+      y += 14;
+    }
+
+    if (analysis.integrityAssessment.notes) {
+      checkPage(15);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(100);
+      const notesLines = doc.splitTextToSize(analysis.integrityAssessment.notes, pw - 40);
+      doc.text(notesLines, 20, y);
+      doc.setTextColor(0);
+      y += notesLines.length * 4.5 + 5;
+    }
+    y += 5;
+  }
+
+  // ─── Algorithm & Engine Notes ───
+  if (analysis.algorithmNotes) {
+    checkPage(35);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Analysis Engine Details", 15, y);
+    y += 8;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100);
+    if (analysis.algorithmNotes.facsUnitsDetected) {
+      doc.text(`FACS Units Detected: ${analysis.algorithmNotes.facsUnitsDetected}`, 20, y);
+      y += 5;
+    }
+    if (analysis.algorithmNotes.emaSmoothingApplied !== undefined) {
+      doc.text(`EMA Smoothing: ${analysis.algorithmNotes.emaSmoothingApplied ? "Applied" : "Not Applied"}`, 20, y);
+      y += 5;
+    }
+    if (analysis.algorithmNotes.mediaPipeConfidence) {
+      doc.text(`MediaPipe Confidence: ${analysis.algorithmNotes.mediaPipeConfidence}`, 20, y);
+      y += 5;
+    }
+    if (analysis.algorithmNotes.voicePatternType) {
+      doc.text(`Voice Pattern: ${analysis.algorithmNotes.voicePatternType}`, 20, y);
+      y += 5;
+    }
+    doc.setTextColor(0);
+    y += 5;
+  }
+
+  // ─── Precision Difficulty Scaling ───
+  {
+    checkPage(30);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("Precision Difficulty Scaling", 15, y);
+    y += 8;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100);
+    const diffCounts: Record<string, number> = {};
+    questions.forEach(q => {
+      diffCounts[q.difficulty] = (diffCounts[q.difficulty] || 0) + 1;
+    });
+    const diffText = Object.entries(diffCounts).map(([d, c]) => `${d}: ${c}`).join("  |  ");
+    doc.text(`Question Difficulty Distribution: ${diffText}`, 20, y);
+    y += 5;
+    doc.text("AI dynamically calibrates question complexity based on resume analysis,", 20, y);
+    y += 5;
+    doc.text("targeting skill gaps and experience depth for maximum evaluation accuracy.", 20, y);
+    doc.setTextColor(0);
+    y += 12;
+  }
+
   // Questions
   if (questions.length > 0) {
     checkPage(20);
@@ -262,7 +487,7 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(120);
-    doc.text("Per-question breakdown with your answers, ideal answers, scores, and feedback", pw / 2, y, { align: "center" });
+    doc.text("Per-question breakdown with answers, ideal answers, scores, and feedback", pw / 2, y, { align: "center" });
     doc.setTextColor(0);
     y += 12;
 
@@ -280,7 +505,6 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
       doc.setTextColor(60, 60, 180);
       doc.text(`Q${qNum}`, 19, y + 7);
       doc.setTextColor(0);
-      // Score badge
       const scoreColor: [number, number, number] = qb.score >= 70 ? [34, 197, 94] : qb.score >= 50 ? [245, 158, 11] : [239, 68, 68];
       doc.setFillColor(...scoreColor);
       doc.roundedRect(pw - 48, y + 2, 30, 6, 2, 2, "F");
@@ -299,6 +523,24 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
         checkPage(qLines.length * 5 + 4);
         doc.text(qLines, 18, y);
         y += qLines.length * 5 + 4;
+      }
+
+      // Emotion & body language for this question
+      if (qb.emotionDuringAnswer || qb.bodyLanguageNote) {
+        checkPage(12);
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(100);
+        if (qb.emotionDuringAnswer) {
+          doc.text(`Emotion: ${qb.emotionDuringAnswer}`, 18, y);
+          y += 4;
+        }
+        if (qb.bodyLanguageNote) {
+          doc.text(`Body Language: ${qb.bodyLanguageNote}`, 18, y);
+          y += 4;
+        }
+        doc.setTextColor(0);
+        y += 2;
       }
 
       // Your Answer
@@ -347,7 +589,7 @@ export function downloadReportPdf(analysis: AnalysisResult, questions: Question[
         y += fbLines.length * 4.5 + 4;
       }
 
-      y += 8; // gap between questions
+      y += 8;
     });
   }
 
