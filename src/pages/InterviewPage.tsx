@@ -87,6 +87,14 @@ const InterviewPage = () => {
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>("");
 
+  // Cheating detection state
+  const [cheatingWarnings, setCheatingWarnings] = useState<{ type: string; timestamp: number; question: number }[]>([]);
+  const [activeWarning, setActiveWarning] = useState<string | null>(null);
+  const warningTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tabSwitchCountRef = useRef(0);
+  const lookAwayCountRef = useRef(0);
+  const lastLookAwayRef = useRef(0);
+
   // Load available voices
   useEffect(() => {
     const loadVoices = () => {
@@ -118,6 +126,41 @@ const InterviewPage = () => {
   const [mediaPipeReady, setMediaPipeReady] = useState(false);
 
   const isHrPhase = step === "hr-questions" || step === "hr-practice";
+  const isPracticing = step === "practice" || step === "hr-practice";
+
+  // Show warning helper
+  const showWarning = useCallback((message: string, type: string) => {
+    const qIndex = isHrPhase ? questions.length + currentQ : currentQ;
+    setCheatingWarnings(prev => [...prev, { type, timestamp: Date.now(), question: qIndex + 1 }]);
+    setActiveWarning(message);
+    if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+    warningTimeoutRef.current = setTimeout(() => setActiveWarning(null), 4000);
+  }, [currentQ, isHrPhase, questions.length]);
+
+  // Tab switch detection
+  useEffect(() => {
+    if (!isPracticing) return;
+    const handleVisibility = () => {
+      if (document.hidden) {
+        tabSwitchCountRef.current++;
+        showWarning("⚠️ Tab switch detected! Stay focused on the interview.", "tab_switch");
+        toast({ title: "Warning: Tab Switch", description: "Switching tabs during interview is flagged as suspicious.", variant: "destructive" });
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [isPracticing, showWarning, toast]);
+
+  // Eye contact / looking away detection
+  useEffect(() => {
+    if (!isPracticing || !mpActive) return;
+    const now = Date.now();
+    if (mpScores.eyeContact < 25 && now - lastLookAwayRef.current > 5000) {
+      lastLookAwayRef.current = now;
+      lookAwayCountRef.current++;
+      showWarning("👀 You seem to be looking away. Maintain eye contact with the camera.", "look_away");
+    }
+  }, [mpScores.eyeContact, isPracticing, mpActive, showWarning]);
   const activeQuestions = isHrPhase ? hrQuestions : questions;
 
   // Save current question data before moving to next
@@ -383,7 +426,12 @@ const InterviewPage = () => {
         finalScores,
         allQuestions,
         resumeText,
-        apiKeyInput || undefined
+        apiKeyInput || undefined,
+        {
+          tabSwitches: tabSwitchCountRef.current,
+          lookAways: lookAwayCountRef.current,
+          warnings: cheatingWarnings,
+        }
       );
 
       // Calculate final duration
@@ -558,6 +606,9 @@ const InterviewPage = () => {
               bodyLanguage={mpScores.bodyLanguage}
               detectedEmotion={mpScores.detectedEmotion}
               emotionConfidence={mpScores.emotionConfidence}
+              warning={activeWarning}
+              tabSwitchCount={tabSwitchCountRef.current}
+              lookAwayCount={lookAwayCountRef.current}
             />
           )}
         </div>
