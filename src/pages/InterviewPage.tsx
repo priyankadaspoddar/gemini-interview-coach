@@ -320,6 +320,8 @@ const InterviewPage = () => {
         }
       }
       prevFrameScoresRef.current = { eye: s.eyeContact, posture: s.posture };
+    }, 2000);
+    return () => clearInterval(checkInterval);
   }, [isPracticing, mpActive]);
   const activeQuestions = isHrPhase ? hrQuestions : questions;
 
