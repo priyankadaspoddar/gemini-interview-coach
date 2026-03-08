@@ -151,7 +151,7 @@ const detailedTechStack = [
     category: "Computer Vision",
     icon: Eye,
     description: "Advanced facial analysis and gesture recognition running directly in the browser.",
-    features: ["FACS (Facial Action Coding System)", "MediaPipe Face Mesh", "Micro-expression Detection", "Posture Alignment Tracking"],
+    features: ["FACS (Facial Action Coding System)", "MediaPipe Face Mesh", "Micro-expression Detection", "Posture & Head Tilt Tracking"],
     specs: { "Inference": "GPU Accelerated", "Latency": "< 30ms", "Markers": "468 3D Points", "Accuracy": "94.2%" }
   },
   {
