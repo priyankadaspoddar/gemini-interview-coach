@@ -60,6 +60,7 @@ interface AnalysisResult {
     erraticEyeMovements: number;
     multipleFaces: number;
     phoneDetections: number;
+    screenShares: number;
     riskLevel: string;
     notes: string;
   };
