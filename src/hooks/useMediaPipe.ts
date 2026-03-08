@@ -245,6 +245,25 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       }
     }
 
+    // Object detection for phones/devices — run every 3rd frame to save perf
+    if (objectDetectorRef.current) {
+      objectDetectFrameRef.current++;
+      if (objectDetectFrameRef.current % 3 === 0) {
+        try {
+          const objResult = objectDetectorRef.current.detectForVideo(video, now + 2);
+          const PHONE_CLASSES = ["cell phone", "remote", "laptop", "book"];
+          const phoneDetected = objResult?.detections?.some((d: any) =>
+            d.categories?.some((c: any) => PHONE_CLASSES.includes(c.categoryName?.toLowerCase()))
+          );
+          if (phoneDetected) {
+            newScores.handNearFace = true;
+          }
+        } catch (err) {
+          // Silently ignore
+        }
+      }
+    }
+
     scoresRef.current = newScores;
     historyRef.current.push({ ...newScores });
 
