@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 import { useMediaPipe } from "@/hooks/useMediaPipe";
+import { LiveAnalysisOverlay } from "@/components/LiveAnalysisOverlay";
 import { extractTextFromPdf } from "@/lib/pdfParser";
 import {
   hasAIClientKey,
