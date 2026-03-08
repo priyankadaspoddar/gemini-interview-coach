@@ -10,6 +10,8 @@ export interface MediaPipeScores {
   blinkRate: number;
   detectedEmotion: string;
   emotionConfidence: number;
+  faceCount: number;
+  handNearFace: boolean;
 }
 
 const DEFAULT_SCORES: MediaPipeScores = {
