@@ -266,32 +266,32 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       if (objectDetectFrameRef.current % 3 === 0) {
         try {
           const objResult = objectDetectorRef.current.detectForVideo(video, now + 2);
-          const PHONE_CLASSES = ["cell phone", "remote", "laptop"];
+          const PHONE_CLASSES = ["cell phone", "remote", "laptop", "tablet", "mouse", "keyboard", "book", "monitor", "tv"];
+          const SUSPICIOUS_CLASSES = ["cell phone", "remote", "laptop", "tablet"];
           const detectedObjects: DetectedObject[] = [];
           let phoneFound = false;
 
           if (objResult?.detections?.length > 0) {
-            // Log all detected objects for debugging
-            const allLabels = objResult.detections.map((d: any) => 
-              d.categories?.map((c: any) => `${c.categoryName}(${Math.round(c.score * 100)}%)`).join(', ')
-            ).join(' | ');
-            console.log('[ObjectDetector]', allLabels);
-
             for (const d of objResult.detections) {
               const cat = d.categories?.[0];
-              if (cat && PHONE_CLASSES.includes(cat.categoryName?.toLowerCase())) {
+              if (!cat) continue;
+              const name = cat.categoryName?.toLowerCase() || "";
+              const bb = d.boundingBox;
+              
+              if (PHONE_CLASSES.includes(name) && bb) {
+                detectedObjects.push({
+                  label: cat.categoryName,
+                  score: Math.round(cat.score * 100),
+                  x: bb.originX / (video.videoWidth || 1),
+                  y: bb.originY / (video.videoHeight || 1),
+                  width: bb.width / (video.videoWidth || 1),
+                  height: bb.height / (video.videoHeight || 1),
+                });
+              }
+              
+              // Only flag suspicious devices (not keyboard/mouse which are normal)
+              if (SUSPICIOUS_CLASSES.includes(name) && cat.score > 0.25) {
                 phoneFound = true;
-                const bb = d.boundingBox;
-                if (bb) {
-                  detectedObjects.push({
-                    label: cat.categoryName,
-                    score: Math.round(cat.score * 100),
-                    x: bb.originX / (video.videoWidth || 1),
-                    y: bb.originY / (video.videoHeight || 1),
-                    width: bb.width / (video.videoWidth || 1),
-                    height: bb.height / (video.videoHeight || 1),
-                  });
-                }
               }
             }
           }
