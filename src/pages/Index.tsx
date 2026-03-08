@@ -1,7 +1,8 @@
-import { FileText, Brain, Eye, Mic, ArrowRight, Upload, Sparkles, Shield, Zap, BookOpen, Layout, Database, CheckCircle, GitBranch, BarChart2, FileOutput, UserCheck, Cpu, Settings2, AlertTriangle, Home } from "lucide-react";
+import { FileText, Brain, Eye, Mic, ArrowRight, Upload, Sparkles, Shield, Zap, BookOpen, Layout, Database, CheckCircle, GitBranch, BarChart2, FileOutput, UserCheck, Cpu, Settings2, AlertTriangle, Home, FileDown } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { downloadResearchPaperPdf } from "@/lib/generateResearchPaperPdf";
 
 const stats = [
   { value: "95%+", label: "Recognition Accuracy" },
