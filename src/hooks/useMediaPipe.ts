@@ -243,12 +243,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
             const bodyLangRaw = clamp(50 + shoulderWidth * 100 - shoulderTilt * 200);
             newScores.bodyLanguage = emaSmooth(prev.bodyLanguage, bodyLangRaw);
 
-            // Keep hand-near-face as fallback heuristic
-            const handNearFace = (leftWrist && dist(leftWrist, nose) < 0.3) ||
-                                 (rightWrist && dist(rightWrist, nose) < 0.3);
-            if (handNearFace && !newScores.handNearFace) {
-              newScores.handNearFace = true;
-            }
+            // Removed hand-near-face heuristic — using ObjectDetector for phone detection only
           }
         }
       } catch (err) {
