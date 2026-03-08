@@ -238,6 +238,26 @@ const InterviewPage = () => {
     };
   }, [isPracticing, toast]);
 
+  // Copy-paste detection
+  useEffect(() => {
+    if (!isPracticing) return;
+    const handlePaste = () => {
+      copyPasteCountRef.current++;
+      showWarningRef.current("📋 Copy-paste detected! Using external content is flagged as suspicious.", "copy_paste");
+      toast({ title: "Warning: Copy-Paste", description: "Pasting content during the interview is flagged.", variant: "destructive" });
+    };
+    const handleCopy = () => {
+      copyPasteCountRef.current++;
+      showWarningRef.current("📋 Copy action detected! Copying interview content is flagged.", "copy_action");
+    };
+    document.addEventListener("paste", handlePaste);
+    document.addEventListener("copy", handleCopy);
+    return () => {
+      document.removeEventListener("paste", handlePaste);
+      document.removeEventListener("copy", handleCopy);
+    };
+  }, [isPracticing, toast]);
+
   useEffect(() => {
     if (!isPracticing || !mpActive) return;
     const checkInterval = setInterval(() => {
