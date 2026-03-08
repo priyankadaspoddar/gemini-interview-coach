@@ -237,8 +237,9 @@ const InterviewPage = () => {
   }, [cameraOn]);
 
   // Auto-start camera when entering practice steps
+  // Auto-start camera when entering any practice/question step
   useEffect(() => {
-    if (step === "practice" || step === "hr-practice") {
+    if (step === "practice" || step === "hr-practice" || step === "hr-questions" || step === "hr-tips") {
       if (!cameraOn) startCamera();
       if (!interviewStartTime) setInterviewStartTime(Date.now());
     }
@@ -329,7 +330,7 @@ const InterviewPage = () => {
   const finishResumeRound = async () => {
     saveCurrentQuestionData();
     window.speechSynthesis?.cancel();
-    stopCamera();
+    // Keep camera running through HR round
     recognitionRef.current?.stop();
     setIsRecording(false);
     setTypedAnswer("");
