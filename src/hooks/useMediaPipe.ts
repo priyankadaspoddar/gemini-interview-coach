@@ -35,7 +35,8 @@ const DEFAULT_SCORES: MediaPipeScores = {
   detectedEmotion: "Neutral",
   emotionConfidence: 0,
   faceCount: 1,
-  handNearFace: false,
+  phoneDetected: false,
+  detectedObjects: [],
 };
 
 const EMA_ALPHA = 0.3;
