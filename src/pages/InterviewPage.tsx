@@ -87,6 +87,14 @@ const InterviewPage = () => {
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>("");
 
+  // Cheating detection state
+  const [cheatingWarnings, setCheatingWarnings] = useState<{ type: string; timestamp: number; question: number }[]>([]);
+  const [activeWarning, setActiveWarning] = useState<string | null>(null);
+  const warningTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tabSwitchCountRef = useRef(0);
+  const lookAwayCountRef = useRef(0);
+  const lastLookAwayRef = useRef(0);
+
   // Load available voices
   useEffect(() => {
     const loadVoices = () => {
