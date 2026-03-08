@@ -24,6 +24,8 @@ const DEFAULT_SCORES: MediaPipeScores = {
   blinkRate: 0,
   detectedEmotion: "Neutral",
   emotionConfidence: 0,
+  faceCount: 1,
+  handNearFace: false,
 };
 
 const EMA_ALPHA = 0.3;
