@@ -201,7 +201,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       intervalRef.current = null;
     }
     // Use setInterval at 5 FPS to avoid blocking the main thread
-    intervalRef.current = setInterval(analyzeFrame, 200);
+    intervalRef.current = setInterval(analyzeFrame, 333); // ~3 FPS - gentle on GPU
     setIsActive(true);
   }, [loadMediaPipe, analyzeFrame]);
 
