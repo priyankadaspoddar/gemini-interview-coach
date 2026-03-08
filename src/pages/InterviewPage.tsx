@@ -783,6 +783,8 @@ const InterviewPage = () => {
               multipleFaceCount={multipleFaceCountRef.current}
               phoneDetectCount={phoneDetectCountRef.current}
               screenShareCount={screenShareCountRef.current}
+              copyPasteCount={copyPasteCountRef.current}
+              inactivityCount={inactivityCountRef.current}
             />
           )}
           {/* Phone bounding boxes */}
