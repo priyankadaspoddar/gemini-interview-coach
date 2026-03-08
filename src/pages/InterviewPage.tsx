@@ -58,6 +58,8 @@ interface AnalysisResult {
     lookAways: number;
     headTilts: number;
     erraticEyeMovements: number;
+    multipleFaces: number;
+    phoneDetections: number;
     riskLevel: string;
     notes: string;
   };
