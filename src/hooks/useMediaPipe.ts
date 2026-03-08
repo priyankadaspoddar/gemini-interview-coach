@@ -116,7 +116,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
           delegate: "GPU",
         },
         runningMode: "VIDEO",
-        numFaces: 1,
+        numFaces: 4,
         outputFaceBlendshapes: true,
       });
 
@@ -126,7 +126,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
           delegate: "GPU",
         },
         runningMode: "VIDEO",
-        numPoses: 1,
+        numPoses: 2,
       });
 
       loadedRef.current = true;
