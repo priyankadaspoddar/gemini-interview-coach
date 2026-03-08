@@ -1,4 +1,4 @@
-import { Activity, Eye, PersonStanding, Smile, Hand } from "lucide-react";
+import { Activity, Eye, PersonStanding, Smile, Hand, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LiveAnalysisProps {
@@ -6,6 +6,8 @@ interface LiveAnalysisProps {
   posture: number;
   expression: number;
   bodyLanguage: number;
+  detectedEmotion?: string;
+  emotionConfidence?: number;
 }
 
 function getScoreColor(score: number) {
@@ -26,6 +28,17 @@ function getScoreBg(score: number) {
   if (score >= 50) return "bg-amber-500/10 text-amber-400";
   return "bg-red-500/10 text-red-400";
 }
+
+const EMOTION_EMOJI: Record<string, string> = {
+  Happy: "😊",
+  Sad: "😔",
+  Surprised: "😮",
+  Angry: "😠",
+  Disgusted: "🤢",
+  Fearful: "😨",
+  Focused: "🧐",
+  Neutral: "😐",
+};
 
 interface MetricRowProps {
   icon: React.ReactNode;
@@ -66,8 +79,9 @@ function MetricRow({ icon, label, value }: MetricRowProps) {
   );
 }
 
-export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLanguage }: LiveAnalysisProps) {
+export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLanguage, detectedEmotion = "Neutral", emotionConfidence = 0 }: LiveAnalysisProps) {
   const overall = Math.round((eyeContact + posture + expression + bodyLanguage) / 4);
+  const emoji = EMOTION_EMOJI[detectedEmotion] || "😐";
 
   return (
     <div className="absolute top-3 right-3 w-48 bg-background/85 backdrop-blur-md rounded-xl p-3 border border-border/50 shadow-lg animate-fade-in">
@@ -80,6 +94,14 @@ export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLangu
           </div>
           <span className="text-xs font-semibold text-foreground">Live Analysis</span>
         </div>
+      </div>
+
+      {/* Emotion badge */}
+      <div className="flex items-center justify-center gap-1.5 mb-3 px-2 py-1.5 rounded-lg bg-muted/40 border border-border/30">
+        <Sparkles className="h-3 w-3 text-primary" />
+        <span className="text-[11px] text-muted-foreground">Emotion:</span>
+        <span className="text-sm">{emoji}</span>
+        <span className="text-[11px] font-semibold text-foreground">{detectedEmotion}</span>
       </div>
 
       {/* Overall score ring */}
