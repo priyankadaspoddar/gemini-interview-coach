@@ -58,6 +58,8 @@ interface AnalysisResult {
     lookAways: number;
     headTilts: number;
     erraticEyeMovements: number;
+    multipleFaces: number;
+    phoneDetections: number;
     riskLevel: string;
     notes: string;
   };
@@ -113,6 +115,10 @@ const InterviewPage = () => {
   const lastHeadTiltRef = useRef(0);
   const erraticEyeCountRef = useRef(0);
   const eyeHistoryRef = useRef<number[]>([]);
+  const multipleFaceCountRef = useRef(0);
+  const lastMultiFaceRef = useRef(0);
+  const phoneDetectCountRef = useRef(0);
+  const lastPhoneRef = useRef(0);
 
   // Load available voices
   useEffect(() => {
@@ -177,21 +183,21 @@ const InterviewPage = () => {
     const checkInterval = setInterval(() => {
       const now = Date.now();
 
-      // Look-away detection (eye contact < 25 for 5s+)
+      // Look-away detection
       if (mpScores.eyeContact < 25 && now - lastLookAwayRef.current > 5000) {
         lastLookAwayRef.current = now;
         lookAwayCountRef.current++;
         showWarningRef.current("👀 You seem to be looking away. Maintain eye contact with the camera.", "look_away");
       }
 
-      // Suspicious head tilt detection (>15° sustained)
+      // Suspicious head tilt detection
       if (mpScores.headTilt > 15 && now - lastHeadTiltRef.current > 6000) {
         lastHeadTiltRef.current = now;
         headTiltCountRef.current++;
         showWarningRef.current("🔄 Suspicious head tilt detected. Keep your head straight and face the camera.", "head_tilt");
       }
 
-      // Erratic eye movement detection (rapid eye contact fluctuations)
+      // Erratic eye movement detection
       eyeHistoryRef.current.push(mpScores.eyeContact);
       if (eyeHistoryRef.current.length > 5) eyeHistoryRef.current.shift();
       if (eyeHistoryRef.current.length >= 5) {
@@ -205,6 +211,20 @@ const InterviewPage = () => {
           eyeHistoryRef.current = [];
           showWarningRef.current("👁️ Erratic eye movement detected. Focus on the camera.", "erratic_eye");
         }
+      }
+
+      // Multiple face detection
+      if (mpScores.faceCount > 1 && now - lastMultiFaceRef.current > 8000) {
+        lastMultiFaceRef.current = now;
+        multipleFaceCountRef.current++;
+        showWarningRef.current(`👥 ${mpScores.faceCount} faces detected! Only the candidate should be visible.`, "multiple_faces");
+      }
+
+      // Phone/hand near face detection
+      if (mpScores.handNearFace && now - lastPhoneRef.current > 8000) {
+        lastPhoneRef.current = now;
+        phoneDetectCountRef.current++;
+        showWarningRef.current("📱 Hand near face detected — possible phone usage. Keep hands away from your face.", "phone_detect");
       }
     }, 2000);
     return () => clearInterval(checkInterval);
@@ -480,6 +500,8 @@ const InterviewPage = () => {
           lookAways: lookAwayCountRef.current,
           headTilts: headTiltCountRef.current,
           erraticEyeMovements: erraticEyeCountRef.current,
+          multipleFaces: multipleFaceCountRef.current,
+          phoneDetections: phoneDetectCountRef.current,
           warnings: cheatingWarnings,
         }
       );
@@ -661,6 +683,8 @@ const InterviewPage = () => {
               lookAwayCount={lookAwayCountRef.current}
               headTiltCount={headTiltCountRef.current}
               erraticEyeCount={erraticEyeCountRef.current}
+              multipleFaceCount={multipleFaceCountRef.current}
+              phoneDetectCount={phoneDetectCountRef.current}
             />
           )}
         </div>
@@ -993,7 +1017,7 @@ const InterviewPage = () => {
                     {analysis.integrityAssessment.riskLevel === "None" ? "✓ Clean" : `⚠ ${analysis.integrityAssessment.riskLevel} Risk`}
                   </div>
                 </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <div className="p-4 rounded-lg bg-card border border-border text-center">
                     <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Tab Switches</span>
                     <p className={`text-2xl font-bold font-mono ${analysis.integrityAssessment.tabSwitches === 0 ? "text-emerald-400" : "text-destructive"}`}>
@@ -1016,6 +1040,18 @@ const InterviewPage = () => {
                     <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Erratic Eye</span>
                     <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.erraticEyeMovements || 0) === 0 ? "text-emerald-400" : "text-destructive"}`}>
                       {analysis.integrityAssessment.erraticEyeMovements || 0}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-card border border-border text-center">
+                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Multiple Faces</span>
+                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.multipleFaces || 0) === 0 ? "text-emerald-400" : "text-destructive"}`}>
+                      {analysis.integrityAssessment.multipleFaces || 0}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-card border border-border text-center">
+                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Phone/Hand</span>
+                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.phoneDetections || 0) === 0 ? "text-emerald-400" : "text-destructive"}`}>
+                      {analysis.integrityAssessment.phoneDetections || 0}
                     </p>
                   </div>
                 </div>

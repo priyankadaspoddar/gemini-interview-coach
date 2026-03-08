@@ -10,6 +10,8 @@ export interface MediaPipeScores {
   blinkRate: number;
   detectedEmotion: string;
   emotionConfidence: number;
+  faceCount: number;
+  handNearFace: boolean;
 }
 
 const DEFAULT_SCORES: MediaPipeScores = {
@@ -22,6 +24,8 @@ const DEFAULT_SCORES: MediaPipeScores = {
   blinkRate: 0,
   detectedEmotion: "Neutral",
   emotionConfidence: 0,
+  faceCount: 1,
+  handNearFace: false,
 };
 
 const EMA_ALPHA = 0.3;
@@ -112,7 +116,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
           delegate: "GPU",
         },
         runningMode: "VIDEO",
-        numFaces: 1,
+        numFaces: 4,
         outputFaceBlendshapes: true,
       });
 
@@ -122,7 +126,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
           delegate: "GPU",
         },
         runningMode: "VIDEO",
-        numPoses: 1,
+        numPoses: 2,
       });
 
       loadedRef.current = true;
@@ -147,8 +151,10 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
     if (faceLandmarkerRef.current) {
       try {
         const faceResult = faceLandmarkerRef.current.detectForVideo(video, now);
+        const faceCount = faceResult?.faceLandmarks?.length || 0;
+        newScores.faceCount = faceCount;
 
-        if (faceResult?.faceLandmarks?.length > 0) {
+        if (faceCount > 0) {
           const landmarks = faceResult.faceLandmarks[0];
 
           const noseTip = landmarks[1];
@@ -197,6 +203,8 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
           const leftShoulder = lm[11];
           const rightShoulder = lm[12];
           const nose = lm[0];
+          const leftWrist = lm[15];
+          const rightWrist = lm[16];
 
           if (leftShoulder && rightShoulder && nose) {
             const shoulderTilt = Math.abs(leftShoulder.y - rightShoulder.y);
@@ -209,6 +217,12 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
             const shoulderWidth = dist(leftShoulder, rightShoulder);
             const bodyLangRaw = clamp(50 + shoulderWidth * 100 - shoulderTilt * 200);
             newScores.bodyLanguage = emaSmooth(prev.bodyLanguage, bodyLangRaw);
+
+            // Phone detection: hand raised near face/ear level
+            const earY = nose.y;
+            const handNearFace = (leftWrist && dist(leftWrist, nose) < 0.2 && leftWrist.y < earY + 0.1) ||
+                                 (rightWrist && dist(rightWrist, nose) < 0.2 && rightWrist.y < earY + 0.1);
+            newScores.handNearFace = !!handNearFace;
           }
         }
       } catch (err) {
@@ -285,6 +299,8 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       blinkRate: Math.round(sum.blinkRate / len),
       detectedEmotion: topEmotion,
       emotionConfidence: 0,
+      faceCount: 1,
+      handNearFace: false,
       emotionSummary,
     };
   }, []);
