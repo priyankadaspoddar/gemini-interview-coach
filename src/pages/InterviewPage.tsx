@@ -776,12 +776,10 @@ const InterviewPage = () => {
         )}
 
         {/* HR PRACTICE — analysis only after completing all 5 HR questions */}
-        {step === "hr-practice" && (
-          {renderPracticeView({ qs: hrQuestions, phaseLabel: "HR Round",
+        {step === "hr-practice" && renderPracticeView({ qs: hrQuestions, phaseLabel: "HR Round",
             onFinish: finishAllAndAnalyze,
             finishLabel: loading ? "Analyzing..." : "Finish & Analyze All",
             finishIcon: (<BarChart3 className="h-4 w-4" />) })}
-        )}
 
         {/* RESULTS */}
         {step === "results" && analysis && (
