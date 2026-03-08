@@ -169,18 +169,42 @@ const InterviewPage = () => {
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [isPracticing, toast]);
 
-  // Eye contact / looking away detection — polled on interval instead of per-score-change
+  // Cheating detection — polled on 2s interval for efficiency
   useEffect(() => {
     if (!isPracticing || !mpActive) return;
     const checkInterval = setInterval(() => {
-      const eyeContact = mpScores.eyeContact;
       const now = Date.now();
-      if (eyeContact < 25 && now - lastLookAwayRef.current > 5000) {
+
+      // Look-away detection (eye contact < 25 for 5s+)
+      if (mpScores.eyeContact < 25 && now - lastLookAwayRef.current > 5000) {
         lastLookAwayRef.current = now;
         lookAwayCountRef.current++;
         showWarningRef.current("👀 You seem to be looking away. Maintain eye contact with the camera.", "look_away");
       }
-    }, 2000); // Check every 2s instead of every frame
+
+      // Suspicious head tilt detection (>15° sustained)
+      if (mpScores.headTilt > 15 && now - lastHeadTiltRef.current > 6000) {
+        lastHeadTiltRef.current = now;
+        headTiltCountRef.current++;
+        showWarningRef.current("🔄 Suspicious head tilt detected. Keep your head straight and face the camera.", "head_tilt");
+      }
+
+      // Erratic eye movement detection (rapid eye contact fluctuations)
+      eyeHistoryRef.current.push(mpScores.eyeContact);
+      if (eyeHistoryRef.current.length > 5) eyeHistoryRef.current.shift();
+      if (eyeHistoryRef.current.length >= 5) {
+        const vals = eyeHistoryRef.current;
+        let swings = 0;
+        for (let i = 1; i < vals.length; i++) {
+          if (Math.abs(vals[i] - vals[i - 1]) > 30) swings++;
+        }
+        if (swings >= 3) {
+          erraticEyeCountRef.current++;
+          eyeHistoryRef.current = [];
+          showWarningRef.current("👁️ Erratic eye movement detected. Focus on the camera.", "erratic_eye");
+        }
+      }
+    }, 2000);
     return () => clearInterval(checkInterval);
   }, [isPracticing, mpActive]);
   const activeQuestions = isHrPhase ? hrQuestions : questions;
