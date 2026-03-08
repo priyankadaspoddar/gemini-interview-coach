@@ -87,9 +87,11 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const faceLandmarkerRef = useRef<any>(null);
   const poseLandmarkerRef = useRef<any>(null);
+  const objectDetectorRef = useRef<any>(null);
   const loadedRef = useRef(false);
   const loadingRef = useRef(false);
   const historyRef = useRef<MediaPipeScores[]>([]);
+  const objectDetectFrameRef = useRef(0);
 
   const loadMediaPipe = useCallback(async () => {
     if (loadedRef.current || loadingRef.current) return;
