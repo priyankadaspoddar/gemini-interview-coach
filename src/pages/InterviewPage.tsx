@@ -149,6 +149,8 @@ const InterviewPage = () => {
 
   const { scores: mpScores, isActive: mpActive, isLoading: mpLoading, loadError: mpLoadError, start: startMP, stop: stopMP, getAverageScores, resetHistory } = useMediaPipe(videoRef);
   const [mediaPipeReady, setMediaPipeReady] = useState(false);
+  const mpScoresRef = useRef(mpScores);
+  mpScoresRef.current = mpScores;
 
   const isHrPhase = step === "hr-questions" || step === "hr-practice";
   const isPracticing = step === "practice" || step === "hr-practice";
@@ -182,23 +184,24 @@ const InterviewPage = () => {
     if (!isPracticing || !mpActive) return;
     const checkInterval = setInterval(() => {
       const now = Date.now();
+      const s = mpScoresRef.current;
 
       // Look-away detection — triggers when eye contact drops below 40%
-      if (mpScores.eyeContact < 40 && now - lastLookAwayRef.current > 3000) {
+      if (s.eyeContact < 40 && now - lastLookAwayRef.current > 3000) {
         lastLookAwayRef.current = now;
         lookAwayCountRef.current++;
         showWarningRef.current("👀 You seem to be looking away. Maintain eye contact with the camera.", "look_away");
       }
 
       // Suspicious head tilt detection — triggers at 8° tilt
-      if (mpScores.headTilt > 8 && now - lastHeadTiltRef.current > 4000) {
+      if (s.headTilt > 8 && now - lastHeadTiltRef.current > 4000) {
         lastHeadTiltRef.current = now;
         headTiltCountRef.current++;
         showWarningRef.current("🔄 Suspicious head tilt detected. Keep your head straight and face the camera.", "head_tilt");
       }
 
       // Erratic eye movement detection
-      eyeHistoryRef.current.push(mpScores.eyeContact);
+      eyeHistoryRef.current.push(s.eyeContact);
       if (eyeHistoryRef.current.length > 5) eyeHistoryRef.current.shift();
       if (eyeHistoryRef.current.length >= 5) {
         const vals = eyeHistoryRef.current;
@@ -214,17 +217,17 @@ const InterviewPage = () => {
       }
 
       // Multiple face detection
-      if (mpScores.faceCount > 1 && now - lastMultiFaceRef.current > 5000) {
+      if (s.faceCount > 1 && now - lastMultiFaceRef.current > 5000) {
         lastMultiFaceRef.current = now;
         multipleFaceCountRef.current++;
-        showWarningRef.current(`👥 ${mpScores.faceCount} faces detected! Only the candidate should be visible.`, "multiple_faces");
+        showWarningRef.current(`👥 ${s.faceCount} faces detected! Only the candidate should be visible.`, "multiple_faces");
       }
 
       // Phone/hand near face detection
-      if (mpScores.handNearFace && now - lastPhoneRef.current > 5000) {
+      if (s.handNearFace && now - lastPhoneRef.current > 5000) {
         lastPhoneRef.current = now;
         phoneDetectCountRef.current++;
-        showWarningRef.current("📱 Hand near face detected — possible phone usage. Keep hands away from your face.", "phone_detect");
+        showWarningRef.current("📱 Phone or device detected — keep devices away during the interview.", "phone_detect");
       }
     }, 2000);
     return () => clearInterval(checkInterval);
