@@ -16,6 +16,8 @@ interface LiveAnalysisProps {
   multipleFaceCount?: number;
   phoneDetectCount?: number;
   screenShareCount?: number;
+  copyPasteCount?: number;
+  inactivityCount?: number;
 }
 
 function getScoreColor(score: number) {
