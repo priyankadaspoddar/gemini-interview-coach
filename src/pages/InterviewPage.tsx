@@ -84,6 +84,24 @@ const InterviewPage = () => {
 
   // TTS state
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>("");
+
+  // Load available voices
+  useEffect(() => {
+    const loadVoices = () => {
+      const voices = window.speechSynthesis?.getVoices() || [];
+      const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+      setAvailableVoices(englishVoices);
+      if (!selectedVoiceURI && englishVoices.length > 0) {
+        const indian = englishVoices.find(v => v.lang === 'en-IN');
+        setSelectedVoiceURI((indian || englishVoices[0]).voiceURI);
+      }
+    };
+    loadVoices();
+    window.speechSynthesis?.addEventListener('voiceschanged', loadVoices);
+    return () => window.speechSynthesis?.removeEventListener('voiceschanged', loadVoices);
+  }, []);
 
   // Interactive chat
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([]);
