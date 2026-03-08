@@ -845,6 +845,12 @@ const InterviewPage = () => {
             {isRecording ? "Stop Recording" : "Start Recording"}
           </Button>
 
+          {currentQ < qs.length - 1 && (
+            <Button variant="ghost" onClick={() => { setTranscript(""); setTypedAnswer(""); saveCurrentQuestionData(); setCurrentQ(prev => prev + 1); resetHistory(); }} className="gap-2 text-muted-foreground hover:text-foreground">
+              <SkipForward className="h-4 w-4" /> Skip Question
+            </Button>
+          )}
+
           {currentQ < qs.length - 1 ? (
             <Button variant="outline" onClick={goToNextQuestion} className="gap-2 border-border">
               <span className="flex items-center gap-2"><Send className="h-4 w-4" /> Submit Answer & Next</span>
