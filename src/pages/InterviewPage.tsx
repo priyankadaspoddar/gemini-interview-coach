@@ -223,8 +223,8 @@ const InterviewPage = () => {
         showWarningRef.current(`👥 ${s.faceCount} faces detected! Only the candidate should be visible.`, "multiple_faces");
       }
 
-      // Phone/hand near face detection
-      if (s.handNearFace && now - lastPhoneRef.current > 5000) {
+      // Phone detection (via ObjectDetector)
+      if (s.phoneDetected && now - lastPhoneRef.current > 5000) {
         lastPhoneRef.current = now;
         phoneDetectCountRef.current++;
         showWarningRef.current("📱 Phone or device detected — keep devices away during the interview.", "phone_detect");

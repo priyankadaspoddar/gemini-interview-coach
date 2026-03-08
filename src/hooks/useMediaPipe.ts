@@ -356,7 +356,8 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       detectedEmotion: topEmotion,
       emotionConfidence: 0,
       faceCount: 1,
-      handNearFace: false,
+      phoneDetected: false,
+      detectedObjects: [],
       emotionSummary,
     };
   }, []);
