@@ -102,6 +102,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
   const analyzeFrame = useCallback(() => {
     const video = videoRef.current;
     if (!video || video.readyState < 2 || video.paused || video.ended) return;
+    const now = performance.now();
 
     const prev = scoresRef.current;
     let newScores = { ...prev };
