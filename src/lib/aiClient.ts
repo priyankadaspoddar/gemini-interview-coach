@@ -239,7 +239,7 @@ export async function analyzePresentationDirect(
       "tabSwitches": 0,
       "lookAways": 0,
       "headTilts": 0,
-      "erraticEyeMovements": 0,
+      "suspiciousGaze": 0,
       "multipleFaces": 0,
       "phoneDetections": 0,
       "screenShares": 0,
