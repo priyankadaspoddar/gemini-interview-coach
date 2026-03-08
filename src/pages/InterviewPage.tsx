@@ -721,12 +721,10 @@ const InterviewPage = () => {
         )}
 
         {/* RESUME PRACTICE */}
-        {step === "practice" && (
-          {renderPracticeView({ qs: questions, phaseLabel: "Resume Round",
+        {step === "practice" && renderPracticeView({ qs: questions, phaseLabel: "Resume Round",
             onFinish: finishResumeRound,
             finishLabel: "Finish & Start HR Round",
             finishIcon: (<Users className="h-4 w-4" />) })}
-        )}
 
         {/* HR QUESTIONS */}
         {step === "hr-questions" && (
