@@ -121,6 +121,12 @@ const InterviewPage = () => {
   const phoneDetectCountRef = useRef(0);
   const lastPhoneRef = useRef(0);
   const screenShareCountRef = useRef(0);
+  const copyPasteCountRef = useRef(0);
+  const inactivityCountRef = useRef(0);
+  const lastInactivityRef = useRef(0);
+  const lastTranscriptRef = useRef("");
+  const lastTranscriptTimeRef = useRef(Date.now());
+  const prevFrameScoresRef = useRef<{ eye: number; posture: number } | null>(null);
 
   // Load available voices
   useEffect(() => {
