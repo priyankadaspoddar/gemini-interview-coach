@@ -146,6 +146,9 @@ export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLangu
             {phoneDetectCount > 0 && (
               <div className="text-muted-foreground">Phone detected: <span className="text-destructive font-mono">{phoneDetectCount}</span></div>
             )}
+            {screenShareCount > 0 && (
+              <div className="text-muted-foreground">Screen share: <span className="text-destructive font-mono">{screenShareCount}</span></div>
+            )}
           </div>
         )}
 
