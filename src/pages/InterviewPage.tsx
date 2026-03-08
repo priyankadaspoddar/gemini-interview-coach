@@ -498,6 +498,8 @@ const InterviewPage = () => {
           lookAways: lookAwayCountRef.current,
           headTilts: headTiltCountRef.current,
           erraticEyeMovements: erraticEyeCountRef.current,
+          multipleFaces: multipleFaceCountRef.current,
+          phoneDetections: phoneDetectCountRef.current,
           warnings: cheatingWarnings,
         }
       );
