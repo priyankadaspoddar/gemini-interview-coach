@@ -278,7 +278,7 @@ const InterviewPage = () => {
         showWarningRef.current("🔄 Suspicious head tilt detected. Keep your head straight and face the camera.", "head_tilt");
       }
 
-      // Erratic eye movement detection
+      // Suspicious gaze detection
       eyeHistoryRef.current.push(s.eyeContact);
       if (eyeHistoryRef.current.length > 5) eyeHistoryRef.current.shift();
       if (eyeHistoryRef.current.length >= 5) {
@@ -288,9 +288,9 @@ const InterviewPage = () => {
           if (Math.abs(vals[i] - vals[i - 1]) > 30) swings++;
         }
         if (swings >= 3) {
-          erraticEyeCountRef.current++;
+          suspiciousGazeCountRef.current++;
           eyeHistoryRef.current = [];
-          showWarningRef.current("👁️ Erratic eye movement detected. Focus on the camera.", "erratic_eye");
+          showWarningRef.current("👁️ Suspicious gaze pattern detected. Focus on the camera.", "suspicious_gaze");
         }
       }
 
