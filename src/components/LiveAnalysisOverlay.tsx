@@ -143,7 +143,7 @@ export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLangu
               <div className="text-muted-foreground">Multi-face: <span className="text-destructive font-mono">{multipleFaceCount}</span></div>
             )}
             {phoneDetectCount > 0 && (
-              <div className="text-muted-foreground">Phone/hand: <span className="text-destructive font-mono">{phoneDetectCount}</span></div>
+              <div className="text-muted-foreground">Phone detected: <span className="text-destructive font-mono">{phoneDetectCount}</span></div>
             )}
           </div>
         )}
