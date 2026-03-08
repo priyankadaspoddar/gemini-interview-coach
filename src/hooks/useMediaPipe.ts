@@ -106,7 +106,8 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs"
       );
 
-      const { FaceLandmarker, PoseLandmarker, ObjectDetector, FilesetResolver } = vision;
+      const { FaceLandmarker, PoseLandmarker, FilesetResolver } = vision;
+      const ObjectDetector = (vision as any).ObjectDetector;
 
       const filesetResolver = await FilesetResolver.forVisionTasks(
         "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
