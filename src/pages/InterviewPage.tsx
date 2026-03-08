@@ -183,15 +183,15 @@ const InterviewPage = () => {
     const checkInterval = setInterval(() => {
       const now = Date.now();
 
-      // Look-away detection
-      if (mpScores.eyeContact < 25 && now - lastLookAwayRef.current > 5000) {
+      // Look-away detection — triggers when eye contact drops below 40%
+      if (mpScores.eyeContact < 40 && now - lastLookAwayRef.current > 3000) {
         lastLookAwayRef.current = now;
         lookAwayCountRef.current++;
         showWarningRef.current("👀 You seem to be looking away. Maintain eye contact with the camera.", "look_away");
       }
 
-      // Suspicious head tilt detection
-      if (mpScores.headTilt > 15 && now - lastHeadTiltRef.current > 6000) {
+      // Suspicious head tilt detection — triggers at 8° tilt
+      if (mpScores.headTilt > 8 && now - lastHeadTiltRef.current > 4000) {
         lastHeadTiltRef.current = now;
         headTiltCountRef.current++;
         showWarningRef.current("🔄 Suspicious head tilt detected. Keep your head straight and face the camera.", "head_tilt");

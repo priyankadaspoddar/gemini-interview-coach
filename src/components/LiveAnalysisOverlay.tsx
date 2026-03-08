@@ -93,11 +93,11 @@ export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLangu
 
   return (
     <>
-      {/* Warning banner */}
+      {/* Warning banner — full width, above everything */}
       {warning && (
-        <div className="absolute top-3 left-3 right-56 z-20 animate-fade-in">
-          <div className="bg-destructive/90 text-destructive-foreground rounded-lg px-3 py-2 text-xs font-medium flex items-center gap-2 shadow-lg">
-            <AlertTriangle className="h-4 w-4 flex-shrink-0 animate-pulse" />
+        <div className="absolute top-0 left-0 right-0 z-50 animate-fade-in p-2">
+          <div className="bg-destructive text-destructive-foreground rounded-lg px-4 py-3 text-sm font-semibold flex items-center gap-2 shadow-2xl border border-destructive-foreground/20">
+            <AlertTriangle className="h-5 w-5 flex-shrink-0 animate-pulse" />
             <span>{warning}</span>
           </div>
         </div>
