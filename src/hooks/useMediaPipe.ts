@@ -1,5 +1,14 @@
 import { useRef, useCallback, useState, useEffect } from "react";
 
+export interface DetectedObject {
+  label: string;
+  score: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface MediaPipeScores {
   eyeContact: number;
   posture: number;
@@ -11,7 +20,8 @@ export interface MediaPipeScores {
   detectedEmotion: string;
   emotionConfidence: number;
   faceCount: number;
-  handNearFace: boolean;
+  phoneDetected: boolean;
+  detectedObjects: DetectedObject[];
 }
 
 const DEFAULT_SCORES: MediaPipeScores = {
@@ -25,7 +35,8 @@ const DEFAULT_SCORES: MediaPipeScores = {
   detectedEmotion: "Neutral",
   emotionConfidence: 0,
   faceCount: 1,
-  handNearFace: false,
+  phoneDetected: false,
+  detectedObjects: [],
 };
 
 const EMA_ALPHA = 0.3;
@@ -232,12 +243,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
             const bodyLangRaw = clamp(50 + shoulderWidth * 100 - shoulderTilt * 200);
             newScores.bodyLanguage = emaSmooth(prev.bodyLanguage, bodyLangRaw);
 
-            // Keep hand-near-face as fallback heuristic
-            const handNearFace = (leftWrist && dist(leftWrist, nose) < 0.3) ||
-                                 (rightWrist && dist(rightWrist, nose) < 0.3);
-            if (handNearFace && !newScores.handNearFace) {
-              newScores.handNearFace = true;
-            }
+            // Removed hand-near-face heuristic — using ObjectDetector for phone detection only
           }
         }
       } catch (err) {
@@ -251,19 +257,36 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       if (objectDetectFrameRef.current % 3 === 0) {
         try {
           const objResult = objectDetectorRef.current.detectForVideo(video, now + 2);
-          const PHONE_CLASSES = ["cell phone", "remote", "laptop", "book"];
-          const phoneDetected = objResult?.detections?.some((d: any) =>
-            d.categories?.some((c: any) => PHONE_CLASSES.includes(c.categoryName?.toLowerCase()))
-          );
-          if (phoneDetected) {
-            newScores.handNearFace = true;
+          const PHONE_CLASSES = ["cell phone", "remote", "laptop"];
+          const detectedObjects: DetectedObject[] = [];
+          let phoneFound = false;
+
+          if (objResult?.detections) {
+            for (const d of objResult.detections) {
+              const cat = d.categories?.[0];
+              if (cat && PHONE_CLASSES.includes(cat.categoryName?.toLowerCase())) {
+                phoneFound = true;
+                const bb = d.boundingBox;
+                if (bb) {
+                  detectedObjects.push({
+                    label: cat.categoryName,
+                    score: Math.round(cat.score * 100),
+                    x: bb.originX / (video.videoWidth || 1),
+                    y: bb.originY / (video.videoHeight || 1),
+                    width: bb.width / (video.videoWidth || 1),
+                    height: bb.height / (video.videoHeight || 1),
+                  });
+                }
+              }
+            }
           }
+          newScores.phoneDetected = phoneFound;
+          newScores.detectedObjects = detectedObjects;
         } catch (err) {
           // Silently ignore
         }
       }
     }
-
     scoresRef.current = newScores;
     historyRef.current.push({ ...newScores });
 
@@ -334,7 +357,8 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       detectedEmotion: topEmotion,
       emotionConfidence: 0,
       faceCount: 1,
-      handNearFace: false,
+      phoneDetected: false,
+      detectedObjects: [],
       emotionSummary,
     };
   }, []);
