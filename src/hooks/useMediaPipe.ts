@@ -1,6 +1,6 @@
 import { useRef, useCallback, useState, useEffect } from "react";
 
-interface MediaPipeScores {
+export interface MediaPipeScores {
   eyeContact: number;
   posture: number;
   expression: number;
@@ -8,6 +8,8 @@ interface MediaPipeScores {
   headTilt: number;
   mouthOpenness: number;
   blinkRate: number;
+  detectedEmotion: string;
+  emotionConfidence: number;
 }
 
 const DEFAULT_SCORES: MediaPipeScores = {
@@ -18,6 +20,8 @@ const DEFAULT_SCORES: MediaPipeScores = {
   headTilt: 0,
   mouthOpenness: 0,
   blinkRate: 0,
+  detectedEmotion: "Neutral",
+  emotionConfidence: 0,
 };
 
 const EMA_ALPHA = 0.3;
@@ -34,6 +38,42 @@ function dist(a: { x: number; y: number }, b: { x: number; y: number }): number 
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
 }
 
+// FACS-based emotion detection from blendshapes
+function detectEmotionFromFACS(getShape: (name: string) => number): { emotion: string; confidence: number } {
+  const smile = (getShape("mouthSmileLeft") + getShape("mouthSmileRight")) / 2;
+  const frown = (getShape("mouthFrownLeft") + getShape("mouthFrownRight")) / 2;
+  const browDown = (getShape("browDownLeft") + getShape("browDownRight")) / 2;
+  const browUp = getShape("browInnerUp");
+  const browOuterUp = (getShape("browOuterUpLeft") + getShape("browOuterUpRight")) / 2;
+  const eyeWide = (getShape("eyeWideLeft") + getShape("eyeWideRight")) / 2;
+  const jawOpen = getShape("jawOpen");
+  const mouthPucker = getShape("mouthPucker");
+  const noseSneer = (getShape("noseSneerLeft") + getShape("noseSneerRight")) / 2;
+  const cheekSquint = (getShape("cheekSquintLeft") + getShape("cheekSquintRight")) / 2;
+  const mouthPress = (getShape("mouthPressLeft") + getShape("mouthPressRight")) / 2;
+
+  // Score each emotion using FACS Action Unit combinations
+  const emotions: { emotion: string; score: number }[] = [
+    { emotion: "Happy", score: smile * 0.5 + cheekSquint * 0.3 + browUp * 0.1 - frown * 0.2 },
+    { emotion: "Sad", score: frown * 0.4 + browDown * 0.2 + browUp * 0.15 - smile * 0.3 },
+    { emotion: "Surprised", score: eyeWide * 0.35 + browOuterUp * 0.3 + browUp * 0.2 + jawOpen * 0.15 },
+    { emotion: "Angry", score: browDown * 0.4 + mouthPress * 0.2 + noseSneer * 0.2 - smile * 0.3 },
+    { emotion: "Disgusted", score: noseSneer * 0.5 + browDown * 0.2 + mouthFrown(frown) * 0.2 - smile * 0.2 },
+    { emotion: "Fearful", score: eyeWide * 0.3 + browUp * 0.3 + browOuterUp * 0.2 + mouthPress * 0.1 - smile * 0.2 },
+    { emotion: "Focused", score: browDown * 0.3 + mouthPress * 0.25 + cheekSquint * 0.15 - eyeWide * 0.1 },
+    { emotion: "Neutral", score: 0.15 }, // baseline
+  ];
+
+  const best = emotions.reduce((a, b) => (a.score > b.score ? a : b));
+  const confidence = clamp(best.score * 100, 0, 100);
+
+  // If confidence is too low, default to neutral
+  if (confidence < 10) return { emotion: "Neutral", confidence: 15 };
+  return { emotion: best.emotion, confidence };
+}
+
+function mouthFrown(v: number): number { return v; }
+
 export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
   const scoresRef = useRef<MediaPipeScores>({ ...DEFAULT_SCORES });
   const [scores, setScores] = useState<MediaPipeScores>({ ...DEFAULT_SCORES });
@@ -46,11 +86,8 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
   const loadedRef = useRef(false);
   const loadingRef = useRef(false);
   const historyRef = useRef<MediaPipeScores[]>([]);
-  const rafRef = useRef<number | null>(null);
-  const lastTimestampRef = useRef<number>(0);
 
   const loadMediaPipe = useCallback(async () => {
-    // Prevent double loading
     if (loadedRef.current || loadingRef.current) return;
     loadingRef.current = true;
     setIsLoading(true);
@@ -107,7 +144,6 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
     const prev = scoresRef.current;
     let newScores = { ...prev };
 
-    // Face analysis
     if (faceLandmarkerRef.current) {
       try {
         const faceResult = faceLandmarkerRef.current.detectForVideo(video, now);
@@ -115,19 +151,16 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
         if (faceResult?.faceLandmarks?.length > 0) {
           const landmarks = faceResult.faceLandmarks[0];
 
-          // Eye contact: check if nose tip (1) is centered
           const noseTip = landmarks[1];
           const centerOffset = Math.abs(noseTip.x - 0.5) + Math.abs(noseTip.y - 0.5);
           const eyeContactRaw = clamp(100 - centerOffset * 200);
           newScores.eyeContact = emaSmooth(prev.eyeContact, eyeContactRaw);
 
-          // Head tilt from landmarks
           const leftEye = landmarks[33];
           const rightEye = landmarks[263];
           const tiltAngle = Math.abs(Math.atan2(rightEye.y - leftEye.y, rightEye.x - leftEye.x)) * (180 / Math.PI);
           newScores.headTilt = emaSmooth(prev.headTilt, tiltAngle);
 
-          // Expression from blendshapes
           if (faceResult.faceBlendshapes?.length > 0) {
             const shapes = faceResult.faceBlendshapes[0].categories;
             const getShape = (name: string) => shapes.find((s: any) => s.categoryName === name)?.score || 0;
@@ -140,10 +173,14 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
             newScores.expression = emaSmooth(prev.expression, expressionRaw);
             newScores.mouthOpenness = emaSmooth(prev.mouthOpenness, jawOpen * 100);
 
-            // Blink detection
             const blinkL = getShape("eyeBlinkLeft");
             const blinkR = getShape("eyeBlinkRight");
             newScores.blinkRate = emaSmooth(prev.blinkRate, ((blinkL + blinkR) / 2) * 100);
+
+            // FACS emotion detection
+            const { emotion, confidence } = detectEmotionFromFACS(getShape);
+            newScores.detectedEmotion = emotion;
+            newScores.emotionConfidence = emaSmooth(prev.emotionConfidence, confidence);
           }
         }
       } catch (err) {
@@ -151,10 +188,8 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       }
     }
 
-    // Pose analysis
     if (poseLandmarkerRef.current) {
       try {
-        // Use a slightly different timestamp to avoid collision with face detection
         const poseResult = poseLandmarkerRef.current.detectForVideo(video, now + 1);
 
         if (poseResult?.landmarks?.length > 0) {
@@ -164,7 +199,6 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
           const nose = lm[0];
 
           if (leftShoulder && rightShoulder && nose) {
-            // Posture: shoulder alignment + head position
             const shoulderTilt = Math.abs(leftShoulder.y - rightShoulder.y);
             const shoulderMid = { x: (leftShoulder.x + rightShoulder.x) / 2, y: (leftShoulder.y + rightShoulder.y) / 2 };
             const noseAboveShoulder = shoulderMid.y - nose.y;
@@ -172,7 +206,6 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
             const postureRaw = clamp(80 - shoulderTilt * 300 + noseAboveShoulder * 50);
             newScores.posture = emaSmooth(prev.posture, postureRaw);
 
-            // Body language: shoulder width (openness) and stability
             const shoulderWidth = dist(leftShoulder, rightShoulder);
             const bodyLangRaw = clamp(50 + shoulderWidth * 100 - shoulderTilt * 200);
             newScores.bodyLanguage = emaSmooth(prev.bodyLanguage, bodyLangRaw);
@@ -186,7 +219,6 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
     scoresRef.current = newScores;
     historyRef.current.push({ ...newScores });
 
-    // Keep last 600 frames (~60s at 10fps)
     if (historyRef.current.length > 600) {
       historyRef.current = historyRef.current.slice(-600);
     }
@@ -200,8 +232,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    // Use setInterval at 5 FPS to avoid blocking the main thread
-    intervalRef.current = setInterval(analyzeFrame, 333); // ~3 FPS - gentle on GPU
+    intervalRef.current = setInterval(analyzeFrame, 333);
     setIsActive(true);
   }, [loadMediaPipe, analyzeFrame]);
 
@@ -213,9 +244,9 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
     setIsActive(false);
   }, []);
 
-  const getAverageScores = useCallback((): MediaPipeScores => {
+  const getAverageScores = useCallback((): MediaPipeScores & { emotionSummary: Record<string, number> } => {
     const h = historyRef.current;
-    if (h.length === 0) return { ...DEFAULT_SCORES };
+    if (h.length === 0) return { ...DEFAULT_SCORES, emotionSummary: {} };
 
     const sum = h.reduce(
       (acc, s) => ({
@@ -230,6 +261,19 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       { eyeContact: 0, posture: 0, expression: 0, bodyLanguage: 0, headTilt: 0, mouthOpenness: 0, blinkRate: 0 }
     );
 
+    // Count emotion occurrences for summary
+    const emotionCounts: Record<string, number> = {};
+    h.forEach(s => {
+      emotionCounts[s.detectedEmotion] = (emotionCounts[s.detectedEmotion] || 0) + 1;
+    });
+    const emotionSummary: Record<string, number> = {};
+    Object.entries(emotionCounts).forEach(([emotion, count]) => {
+      emotionSummary[emotion] = Math.round((count / h.length) * 100);
+    });
+
+    // Most frequent emotion
+    const topEmotion = Object.entries(emotionCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "Neutral";
+
     const len = h.length;
     return {
       eyeContact: Math.round(sum.eyeContact / len),
@@ -239,6 +283,9 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       headTilt: Math.round(sum.headTilt / len),
       mouthOpenness: Math.round(sum.mouthOpenness / len),
       blinkRate: Math.round(sum.blinkRate / len),
+      detectedEmotion: topEmotion,
+      emotionConfidence: 0,
+      emotionSummary,
     };
   }, []);
 

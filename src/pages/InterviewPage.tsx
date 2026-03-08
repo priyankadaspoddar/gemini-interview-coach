@@ -526,6 +526,8 @@ const InterviewPage = () => {
               posture={mpScores.posture}
               expression={mpScores.expression}
               bodyLanguage={mpScores.bodyLanguage}
+              detectedEmotion={mpScores.detectedEmotion}
+              emotionConfidence={mpScores.emotionConfidence}
             />
           )}
         </div>
