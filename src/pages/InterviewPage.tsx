@@ -993,7 +993,7 @@ const InterviewPage = () => {
                     {analysis.integrityAssessment.riskLevel === "None" ? "✓ Clean" : `⚠ ${analysis.integrityAssessment.riskLevel} Risk`}
                   </div>
                 </div>
-                <div className="grid sm:grid-cols-3 gap-4">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <div className="p-4 rounded-lg bg-card border border-border text-center">
                     <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Tab Switches</span>
                     <p className={`text-2xl font-bold font-mono ${analysis.integrityAssessment.tabSwitches === 0 ? "text-emerald-400" : "text-destructive"}`}>
@@ -1007,12 +1007,15 @@ const InterviewPage = () => {
                     </p>
                   </div>
                   <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Risk Level</span>
-                    <p className={`text-2xl font-bold ${
-                      analysis.integrityAssessment.riskLevel === "None" ? "text-emerald-400" 
-                        : analysis.integrityAssessment.riskLevel === "Low" ? "text-amber-400" : "text-destructive"
-                    }`}>
-                      {analysis.integrityAssessment.riskLevel}
+                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Head Tilts</span>
+                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.headTilts || 0) === 0 ? "text-emerald-400" : "text-amber-400"}`}>
+                      {analysis.integrityAssessment.headTilts || 0}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-card border border-border text-center">
+                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Erratic Eye</span>
+                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.erraticEyeMovements || 0) === 0 ? "text-emerald-400" : "text-destructive"}`}>
+                      {analysis.integrityAssessment.erraticEyeMovements || 0}
                     </p>
                   </div>
                 </div>
