@@ -218,23 +218,30 @@ const InterviewPage = () => {
   useEffect(() => {
     if (!cameraOn || !streamRef.current) return;
 
-    const video = videoRef.current;
-    if (!video) return;
+    // Small delay to ensure video element is mounted in DOM after step change
+    const timer = setTimeout(() => {
+      const video = videoRef.current;
+      if (!video) return;
 
-    video.srcObject = streamRef.current;
-    video.onloadedmetadata = () => {
-      video.play().then(() => {
-        console.log("Video playing:", video.videoWidth, "x", video.videoHeight);
-        startMPRef.current().then(() => {
-          setMediaPipeReady(true);
+      if (video.srcObject !== streamRef.current) {
+        video.srcObject = streamRef.current;
+      }
+      video.onloadedmetadata = () => {
+        video.play().then(() => {
+          console.log("Video playing:", video.videoWidth, "x", video.videoHeight);
+          startMPRef.current().then(() => {
+            setMediaPipeReady(true);
+          }).catch(console.error);
         }).catch(console.error);
-      }).catch(console.error);
-    };
-    // If already has metadata, just play
-    if (video.readyState >= 2) {
-      video.play().catch(console.error);
-    }
-  }, [cameraOn]);
+      };
+      // If already has metadata, just play
+      if (video.readyState >= 2) {
+        video.play().catch(console.error);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [cameraOn, step]);
 
   // Auto-start camera when entering practice steps
   // Auto-start camera when entering any practice/question step
