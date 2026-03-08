@@ -467,7 +467,7 @@ const InterviewPage = () => {
     </div>
   );
 
-  const PracticeView = ({ qs, phaseLabel, onFinish, finishLabel, finishIcon }: { qs: Question[]; phaseLabel: string; onFinish: () => void; finishLabel: string; finishIcon: React.ReactNode }) => (
+  const renderPracticeView = ({ qs, phaseLabel, onFinish, finishLabel, finishIcon }: { qs: Question[]; phaseLabel: string; onFinish: () => void; finishLabel: string; finishIcon: React.ReactNode }) => (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold mb-2">Practice Session — {phaseLabel}</h1>
@@ -722,10 +722,10 @@ const InterviewPage = () => {
 
         {/* RESUME PRACTICE */}
         {step === "practice" && (
-          <PracticeView qs={questions} phaseLabel="Resume Round"
-            onFinish={finishResumeRound}
-            finishLabel="Finish & Start HR Round"
-            finishIcon={<Users className="h-4 w-4" />} />
+          {renderPracticeView({ qs: questions, phaseLabel: "Resume Round",
+            onFinish: finishResumeRound,
+            finishLabel: "Finish & Start HR Round",
+            finishIcon: <Users className="h-4 w-4" /> })}
         )}
 
         {/* HR QUESTIONS */}
