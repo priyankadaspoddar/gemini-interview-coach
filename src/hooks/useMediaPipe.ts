@@ -270,7 +270,13 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
           const detectedObjects: DetectedObject[] = [];
           let phoneFound = false;
 
-          if (objResult?.detections) {
+          if (objResult?.detections?.length > 0) {
+            // Log all detected objects for debugging
+            const allLabels = objResult.detections.map((d: any) => 
+              d.categories?.map((c: any) => `${c.categoryName}(${Math.round(c.score * 100)}%)`).join(', ')
+            ).join(' | ');
+            console.log('[ObjectDetector]', allLabels);
+
             for (const d of objResult.detections) {
               const cat = d.categories?.[0];
               if (cat && PHONE_CLASSES.includes(cat.categoryName?.toLowerCase())) {
