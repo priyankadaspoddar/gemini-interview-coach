@@ -192,25 +192,16 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
     }
 
     setScores({ ...newScores });
-
-    // Continue the loop
-    rafRef.current = requestAnimationFrame(analyzeFrame);
   }, [videoRef]);
 
   const start = useCallback(async () => {
     await loadMediaPipe();
-    // Stop any existing loop
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    // Use requestAnimationFrame for smoother, more reliable loop
-    lastTimestampRef.current = 0;
-    rafRef.current = requestAnimationFrame(analyzeFrame);
+    // Use setInterval at 5 FPS to avoid blocking the main thread
+    intervalRef.current = setInterval(analyzeFrame, 200);
     setIsActive(true);
   }, [loadMediaPipe, analyzeFrame]);
 
