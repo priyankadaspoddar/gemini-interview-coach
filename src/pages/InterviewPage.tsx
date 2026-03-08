@@ -116,7 +116,7 @@ const InterviewPage = () => {
   const lastLookAwayRef = useRef(0);
   const headTiltCountRef = useRef(0);
   const lastHeadTiltRef = useRef(0);
-  const erraticEyeCountRef = useRef(0);
+  const suspiciousGazeCountRef = useRef(0);
   const eyeHistoryRef = useRef<number[]>([]);
   const multipleFaceCountRef = useRef(0);
   const lastMultiFaceRef = useRef(0);
