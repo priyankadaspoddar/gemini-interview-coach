@@ -287,6 +287,7 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
         }
       }
     }
+    scoresRef.current = newScores;
     historyRef.current.push({ ...newScores });
 
     if (historyRef.current.length > 600) {
