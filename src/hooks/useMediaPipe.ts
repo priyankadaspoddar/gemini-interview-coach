@@ -151,8 +151,10 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
     if (faceLandmarkerRef.current) {
       try {
         const faceResult = faceLandmarkerRef.current.detectForVideo(video, now);
+        const faceCount = faceResult?.faceLandmarks?.length || 0;
+        newScores.faceCount = faceCount;
 
-        if (faceResult?.faceLandmarks?.length > 0) {
+        if (faceCount > 0) {
           const landmarks = faceResult.faceLandmarks[0];
 
           const noseTip = landmarks[1];
