@@ -12,7 +12,7 @@ interface LiveAnalysisProps {
   tabSwitchCount?: number;
   lookAwayCount?: number;
   headTiltCount?: number;
-  erraticEyeCount?: number;
+  suspiciousGazeCount?: number;
   multipleFaceCount?: number;
   phoneDetectCount?: number;
   screenShareCount?: number;
