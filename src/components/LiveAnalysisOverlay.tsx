@@ -11,6 +11,8 @@ interface LiveAnalysisProps {
   warning?: string | null;
   tabSwitchCount?: number;
   lookAwayCount?: number;
+  headTiltCount?: number;
+  erraticEyeCount?: number;
 }
 
 function getScoreColor(score: number) {
@@ -82,10 +84,10 @@ function MetricRow({ icon, label, value }: MetricRowProps) {
   );
 }
 
-export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLanguage, detectedEmotion = "Neutral", emotionConfidence = 0, warning, tabSwitchCount = 0, lookAwayCount = 0 }: LiveAnalysisProps) {
+export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLanguage, detectedEmotion = "Neutral", emotionConfidence = 0, warning, tabSwitchCount = 0, lookAwayCount = 0, headTiltCount = 0, erraticEyeCount = 0 }: LiveAnalysisProps) {
   const overall = Math.round((eyeContact + posture + expression + bodyLanguage) / 4);
   const emoji = EMOTION_EMOJI[detectedEmotion] || "😐";
-  const totalFlags = tabSwitchCount + lookAwayCount;
+  const totalFlags = tabSwitchCount + lookAwayCount + headTiltCount + erraticEyeCount;
 
   return (
     <>
@@ -128,6 +130,12 @@ export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLangu
             )}
             {lookAwayCount > 0 && (
               <div className="text-muted-foreground">Look-aways: <span className="text-destructive font-mono">{lookAwayCount}</span></div>
+            )}
+            {headTiltCount > 0 && (
+              <div className="text-muted-foreground">Head tilts: <span className="text-destructive font-mono">{headTiltCount}</span></div>
+            )}
+            {erraticEyeCount > 0 && (
+              <div className="text-muted-foreground">Erratic eyes: <span className="text-destructive font-mono">{erraticEyeCount}</span></div>
             )}
           </div>
         )}

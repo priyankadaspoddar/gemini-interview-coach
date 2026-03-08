@@ -56,6 +56,8 @@ interface AnalysisResult {
   integrityAssessment?: {
     tabSwitches: number;
     lookAways: number;
+    headTilts: number;
+    erraticEyeMovements: number;
     riskLevel: string;
     notes: string;
   };
@@ -107,6 +109,10 @@ const InterviewPage = () => {
   const tabSwitchCountRef = useRef(0);
   const lookAwayCountRef = useRef(0);
   const lastLookAwayRef = useRef(0);
+  const headTiltCountRef = useRef(0);
+  const lastHeadTiltRef = useRef(0);
+  const erraticEyeCountRef = useRef(0);
+  const eyeHistoryRef = useRef<number[]>([]);
 
   // Load available voices
   useEffect(() => {
@@ -165,18 +171,42 @@ const InterviewPage = () => {
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, [isPracticing, toast]);
 
-  // Eye contact / looking away detection — polled on interval instead of per-score-change
+  // Cheating detection — polled on 2s interval for efficiency
   useEffect(() => {
     if (!isPracticing || !mpActive) return;
     const checkInterval = setInterval(() => {
-      const eyeContact = mpScores.eyeContact;
       const now = Date.now();
-      if (eyeContact < 25 && now - lastLookAwayRef.current > 5000) {
+
+      // Look-away detection (eye contact < 25 for 5s+)
+      if (mpScores.eyeContact < 25 && now - lastLookAwayRef.current > 5000) {
         lastLookAwayRef.current = now;
         lookAwayCountRef.current++;
         showWarningRef.current("👀 You seem to be looking away. Maintain eye contact with the camera.", "look_away");
       }
-    }, 2000); // Check every 2s instead of every frame
+
+      // Suspicious head tilt detection (>15° sustained)
+      if (mpScores.headTilt > 15 && now - lastHeadTiltRef.current > 6000) {
+        lastHeadTiltRef.current = now;
+        headTiltCountRef.current++;
+        showWarningRef.current("🔄 Suspicious head tilt detected. Keep your head straight and face the camera.", "head_tilt");
+      }
+
+      // Erratic eye movement detection (rapid eye contact fluctuations)
+      eyeHistoryRef.current.push(mpScores.eyeContact);
+      if (eyeHistoryRef.current.length > 5) eyeHistoryRef.current.shift();
+      if (eyeHistoryRef.current.length >= 5) {
+        const vals = eyeHistoryRef.current;
+        let swings = 0;
+        for (let i = 1; i < vals.length; i++) {
+          if (Math.abs(vals[i] - vals[i - 1]) > 30) swings++;
+        }
+        if (swings >= 3) {
+          erraticEyeCountRef.current++;
+          eyeHistoryRef.current = [];
+          showWarningRef.current("👁️ Erratic eye movement detected. Focus on the camera.", "erratic_eye");
+        }
+      }
+    }, 2000);
     return () => clearInterval(checkInterval);
   }, [isPracticing, mpActive]);
   const activeQuestions = isHrPhase ? hrQuestions : questions;
@@ -448,6 +478,8 @@ const InterviewPage = () => {
         {
           tabSwitches: tabSwitchCountRef.current,
           lookAways: lookAwayCountRef.current,
+          headTilts: headTiltCountRef.current,
+          erraticEyeMovements: erraticEyeCountRef.current,
           warnings: cheatingWarnings,
         }
       );
@@ -627,6 +659,8 @@ const InterviewPage = () => {
               warning={activeWarning}
               tabSwitchCount={tabSwitchCountRef.current}
               lookAwayCount={lookAwayCountRef.current}
+              headTiltCount={headTiltCountRef.current}
+              erraticEyeCount={erraticEyeCountRef.current}
             />
           )}
         </div>
@@ -959,7 +993,7 @@ const InterviewPage = () => {
                     {analysis.integrityAssessment.riskLevel === "None" ? "✓ Clean" : `⚠ ${analysis.integrityAssessment.riskLevel} Risk`}
                   </div>
                 </div>
-                <div className="grid sm:grid-cols-3 gap-4">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <div className="p-4 rounded-lg bg-card border border-border text-center">
                     <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Tab Switches</span>
                     <p className={`text-2xl font-bold font-mono ${analysis.integrityAssessment.tabSwitches === 0 ? "text-emerald-400" : "text-destructive"}`}>
@@ -973,12 +1007,15 @@ const InterviewPage = () => {
                     </p>
                   </div>
                   <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Risk Level</span>
-                    <p className={`text-2xl font-bold ${
-                      analysis.integrityAssessment.riskLevel === "None" ? "text-emerald-400" 
-                        : analysis.integrityAssessment.riskLevel === "Low" ? "text-amber-400" : "text-destructive"
-                    }`}>
-                      {analysis.integrityAssessment.riskLevel}
+                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Head Tilts</span>
+                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.headTilts || 0) === 0 ? "text-emerald-400" : "text-amber-400"}`}>
+                      {analysis.integrityAssessment.headTilts || 0}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-card border border-border text-center">
+                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Erratic Eye</span>
+                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.erraticEyeMovements || 0) === 0 ? "text-emerald-400" : "text-destructive"}`}>
+                      {analysis.integrityAssessment.erraticEyeMovements || 0}
                     </p>
                   </div>
                 </div>
