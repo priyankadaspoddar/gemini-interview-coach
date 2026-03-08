@@ -61,6 +61,8 @@ interface AnalysisResult {
     multipleFaces: number;
     phoneDetections: number;
     screenShares: number;
+    copyPastes: number;
+    inactivity: number;
     riskLevel: string;
     notes: string;
   };
