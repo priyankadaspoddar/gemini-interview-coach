@@ -167,15 +167,31 @@ export async function analyzePresentationDirect(
   ===== INTERVIEW DATA (${questions.length} questions total) =====
   ${JSON.stringify(questionsData, null, 2)}
   
+  The mediaPipeScores include real-time FACS-based body language analysis from MediaPipe:
+  - eyeContact (0-100): how well the candidate maintained eye contact with the camera
+  - posture (0-100): shoulder alignment and head position quality
+  - expression (0-100): facial expressiveness and engagement
+  - bodyLanguage (0-100): overall body openness and stability
+  - detectedEmotion: the dominant emotion detected via FACS (Happy, Sad, Surprised, Angry, Focused, Neutral, etc.)
+  - emotionSummary: percentage breakdown of all emotions detected during the question
+
+  IMPORTANT: Use the mediaPipeScores to give DETAILED, PERSONALIZED feedback about the candidate's non-verbal communication:
+  - If posture > 70, PRAISE them specifically (e.g., "Your upright posture conveyed confidence and professionalism")
+  - If eyeContact > 75, praise their camera presence
+  - If expression > 70, praise their expressiveness
+  - If any score < 40, give constructive actionable advice
+  - Reference the detected emotions: e.g., "You appeared Happy and engaged during Q3, which shows genuine enthusiasm"
+  - Note emotional shifts between questions (e.g., "Your confidence grew as the interview progressed")
+
   Return ONLY valid JSON: {
-    "vision": {"eyeContact":0,"posture":0,"expression":0,"bodyLanguage":0,"feedback":"detailed feedback"},
+    "vision": {"eyeContact":0,"posture":0,"expression":0,"bodyLanguage":0,"detectedEmotion":"primary emotion","emotionBreakdown":{"Happy":30,"Focused":50,"Neutral":20},"feedback":"DETAILED personalized feedback praising strengths and advising on weaknesses based on actual scores"},
     "voice": {"clarity":0,"pace":0,"tone":0,"engagement":0,"feedback":"detailed feedback"},
     "content": {"relevance":0,"depth":0,"starMethod":0,"feedback":"detailed feedback"},
     "overall": 0,
-    "summary": "comprehensive summary",
+    "summary": "comprehensive summary that mentions specific non-verbal strengths/weaknesses",
     "topStrengths": ["s1", "s2"],
     "topImprovements": ["i1", "i2"],
-    "questionBreakdown": [EXACTLY ${questions.length} items, one per question: {"questionNumber":1,"userAnswer":"...","idealAnswer":"...","score":0,"feedback":"..."}],
+    "questionBreakdown": [EXACTLY ${questions.length} items, one per question: {"questionNumber":1,"userAnswer":"...","idealAnswer":"...","score":0,"feedback":"...","emotionDuringAnswer":"...","bodyLanguageNote":"..."}],
     "metadata": {
       "avgResponseLength": 0,
        "fillerWordCount": 0,
@@ -190,6 +206,12 @@ export async function analyzePresentationDirect(
       "shortlist": true,
       "hireRecommendation": "Yes/No/Borderline",
       "suitableRoles": ["Role 1", "Role 2"]
+    },
+    "nonVerbalAnalysis": {
+      "overallPresence": "detailed assessment of candidate's physical presence",
+      "emotionalIntelligence": "assessment of emotional range and appropriateness",
+      "strengthPraises": ["specific praise 1", "specific praise 2"],
+      "improvementTips": ["actionable tip 1", "actionable tip 2"]
     }
   }
   
@@ -199,7 +221,9 @@ export async function analyzePresentationDirect(
   3. Compare "Skills in Resume" (from resume text) with "Skills Demonstrated" (from transcripts).
   4. Determine if the candidate should be shortlisted and their suitability for roles.
   5. Provide a detailed "idealAnswer" for each question as a perfect STAR-method example.
-  6. Scores are 0-100. Be intelligent, insightful, and official.`;
+  6. Scores are 0-100. Be intelligent, insightful, and official.
+  7. The "nonVerbalAnalysis" section MUST contain genuine praise for good scores and constructive tips for weak areas. Reference actual numbers.
+  8. Each questionBreakdown entry should include "emotionDuringAnswer" and "bodyLanguageNote" based on the mediaPipeScores for that question.`;
 
   const text = await callGroq(key, [
     { role: "system", content: "You are an expert recruiter and interview coach. Return comprehensive analysis in strict JSON format." },
