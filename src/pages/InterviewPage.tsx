@@ -788,7 +788,7 @@ const InterviewPage = () => {
               tabSwitchCount={tabSwitchCountRef.current}
               lookAwayCount={lookAwayCountRef.current}
               headTiltCount={headTiltCountRef.current}
-              erraticEyeCount={erraticEyeCountRef.current}
+              suspiciousGazeCount={suspiciousGazeCountRef.current}
               multipleFaceCount={multipleFaceCountRef.current}
               phoneDetectCount={phoneDetectCountRef.current}
               screenShareCount={screenShareCountRef.current}
