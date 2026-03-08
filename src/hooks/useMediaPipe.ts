@@ -206,10 +206,6 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
   }, [loadMediaPipe, analyzeFrame]);
 
   const stop = useCallback(() => {
-    if (rafRef.current) {
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = null;
-    }
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
