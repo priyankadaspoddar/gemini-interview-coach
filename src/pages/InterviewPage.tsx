@@ -107,6 +107,10 @@ const InterviewPage = () => {
   const tabSwitchCountRef = useRef(0);
   const lookAwayCountRef = useRef(0);
   const lastLookAwayRef = useRef(0);
+  const headTiltCountRef = useRef(0);
+  const lastHeadTiltRef = useRef(0);
+  const erraticEyeCountRef = useRef(0);
+  const eyeHistoryRef = useRef<number[]>([]);
 
   // Load available voices
   useEffect(() => {
