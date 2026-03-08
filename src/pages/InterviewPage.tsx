@@ -904,6 +904,9 @@ const InterviewPage = () => {
     <div className="min-h-screen bg-background">
       <nav className="border-b border-border bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto flex h-14 items-center px-6 gap-4">
+          <a href="https://hamii.vercel.app/" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
+            <Home className="h-4 w-4" /> <span className="hidden sm:inline">Home</span>
+          </a>
           <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" /> Back
           </Link>
