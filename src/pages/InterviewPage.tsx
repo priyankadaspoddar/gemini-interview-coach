@@ -113,6 +113,10 @@ const InterviewPage = () => {
   const lastHeadTiltRef = useRef(0);
   const erraticEyeCountRef = useRef(0);
   const eyeHistoryRef = useRef<number[]>([]);
+  const multipleFaceCountRef = useRef(0);
+  const lastMultiFaceRef = useRef(0);
+  const phoneDetectCountRef = useRef(0);
+  const lastPhoneRef = useRef(0);
 
   // Load available voices
   useEffect(() => {
