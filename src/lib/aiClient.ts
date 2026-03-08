@@ -160,6 +160,20 @@ export async function analyzePresentationDirect(
     mediaPipeScores: allMediaPipeScores[i] || {},
   }));
 
+  const cheatingInfo = cheatingData
+    ? `\n  ===== INTEGRITY MONITORING =====
+  Tab switches detected: ${cheatingData.tabSwitches}
+  Look-away warnings: ${cheatingData.lookAways}
+  Total integrity flags: ${cheatingData.warnings.length}
+  Warning details: ${JSON.stringify(cheatingData.warnings.map(w => ({ type: w.type, question: w.question })))}
+  
+  IMPORTANT: If there are integrity flags (tab switches or look-aways), you MUST:
+  - Mention this in the summary as a concern
+  - Factor it into the overall score (deduct points proportionally)
+  - Include it in the recruiterView assessment
+  - Add a dedicated "integrityAssessment" section in the response\n`
+    : "";
+
   const prompt = `Analyze this complete interview performance across EXACTLY ${questions.length} questions.
   
   ===== RESUME CONTEXT =====
@@ -167,7 +181,7 @@ export async function analyzePresentationDirect(
   
   ===== INTERVIEW DATA (${questions.length} questions total) =====
   ${JSON.stringify(questionsData, null, 2)}
-  
+  ${cheatingInfo}
   The mediaPipeScores include real-time FACS-based body language analysis from MediaPipe:
   - eyeContact (0-100): how well the candidate maintained eye contact with the camera
   - posture (0-100): shoulder alignment and head position quality
@@ -189,7 +203,7 @@ export async function analyzePresentationDirect(
     "voice": {"clarity":0,"pace":0,"tone":0,"engagement":0,"feedback":"detailed feedback"},
     "content": {"relevance":0,"depth":0,"starMethod":0,"feedback":"detailed feedback"},
     "overall": 0,
-    "summary": "comprehensive summary that mentions specific non-verbal strengths/weaknesses",
+    "summary": "comprehensive summary that mentions specific non-verbal strengths/weaknesses AND any integrity concerns",
     "topStrengths": ["s1", "s2"],
     "topImprovements": ["i1", "i2"],
     "questionBreakdown": [EXACTLY ${questions.length} items, one per question: {"questionNumber":1,"userAnswer":"...","idealAnswer":"...","score":0,"feedback":"...","emotionDuringAnswer":"...","bodyLanguageNote":"..."}],
@@ -213,6 +227,12 @@ export async function analyzePresentationDirect(
       "emotionalIntelligence": "assessment of emotional range and appropriateness",
       "strengthPraises": ["specific praise 1", "specific praise 2"],
       "improvementTips": ["actionable tip 1", "actionable tip 2"]
+    },
+    "integrityAssessment": {
+      "tabSwitches": 0,
+      "lookAways": 0,
+      "riskLevel": "None/Low/Medium/High",
+      "notes": "assessment of candidate's focus and potential integrity concerns"
     }
   }
   
@@ -224,7 +244,8 @@ export async function analyzePresentationDirect(
   5. Provide a detailed "idealAnswer" for each question as a perfect STAR-method example.
   6. Scores are 0-100. Be intelligent, insightful, and official.
   7. The "nonVerbalAnalysis" section MUST contain genuine praise for good scores and constructive tips for weak areas. Reference actual numbers.
-  8. Each questionBreakdown entry should include "emotionDuringAnswer" and "bodyLanguageNote" based on the mediaPipeScores for that question.`;
+  8. Each questionBreakdown entry should include "emotionDuringAnswer" and "bodyLanguageNote" based on the mediaPipeScores for that question.
+  9. The "integrityAssessment" MUST reflect the actual tab switch and look-away counts. If counts are 0, riskLevel should be "None" with positive notes.`;
 
   const text = await callGroq(key, [
     { role: "system", content: "You are an expert recruiter and interview coach. Return comprehensive analysis in strict JSON format." },
