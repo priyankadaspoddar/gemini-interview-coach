@@ -737,6 +737,7 @@ const InterviewPage = () => {
               erraticEyeCount={erraticEyeCountRef.current}
               multipleFaceCount={multipleFaceCountRef.current}
               phoneDetectCount={phoneDetectCountRef.current}
+              screenShareCount={screenShareCountRef.current}
             />
           )}
           {/* Phone bounding boxes */}
