@@ -294,18 +294,27 @@ const InterviewPage = () => {
         }
       }
 
-      // Multiple face detection
-      if (s.faceCount > 1 && now - lastMultiFaceRef.current > 5000) {
+      // Multiple face detection — severity-based warnings
+      if (s.faceCount > 1 && now - lastMultiFaceRef.current > 3000) {
         lastMultiFaceRef.current = now;
         multipleFaceCountRef.current++;
-        showWarningRef.current(`👥 ${s.faceCount} faces detected! Only the candidate should be visible.`, "multiple_faces");
+        const severity = s.faceCount >= 3 ? "🚨 CRITICAL" : "⚠️ WARNING";
+        const msg = s.faceCount >= 3
+          ? `${severity}: ${s.faceCount} faces detected! This is a serious integrity violation.`
+          : `👥 ${s.faceCount} faces detected! Only the candidate should be visible.`;
+        showWarningRef.current(msg, "multiple_faces");
+        if (s.faceCount >= 3) {
+          toast({ title: "Critical: Multiple Faces", description: `${s.faceCount} people detected on camera. This will be flagged in the report.`, variant: "destructive" });
+        }
       }
 
-      // Phone detection (via ObjectDetector)
-      if (s.phoneDetected && now - lastPhoneRef.current > 5000) {
+      // Phone/device detection (via ObjectDetector) — enhanced with object names
+      if (s.phoneDetected && now - lastPhoneRef.current > 3000) {
         lastPhoneRef.current = now;
         phoneDetectCountRef.current++;
-        showWarningRef.current("📱 Phone or device detected — keep devices away during the interview.", "phone_detect");
+        const deviceNames = s.detectedObjects.filter(o => ["cell phone", "remote", "laptop", "tablet"].includes(o.label.toLowerCase())).map(o => o.label).join(", ");
+        showWarningRef.current(`📱 Suspicious device detected (${deviceNames || "device"}) — keep all devices away during the interview.`, "phone_detect");
+        toast({ title: "Warning: Device Detected", description: `Detected: ${deviceNames || "electronic device"}. This is recorded.`, variant: "destructive" });
       }
 
       // Inactivity / camera freeze detection
@@ -787,23 +796,26 @@ const InterviewPage = () => {
               inactivityCount={inactivityCountRef.current}
             />
           )}
-          {/* Phone bounding boxes */}
-          {mpActive && mpScores.detectedObjects.length > 0 && mpScores.detectedObjects.map((obj, i) => (
-            <div
-              key={i}
-              className="absolute border-2 border-destructive rounded-md pointer-events-none z-30"
-              style={{
-                left: `${obj.x * 100}%`,
-                top: `${obj.y * 100}%`,
-                width: `${obj.width * 100}%`,
-                height: `${obj.height * 100}%`,
-              }}
-            >
-              <span className="absolute -top-5 left-0 bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">
-                📱 {obj.label} ({obj.score}%)
-              </span>
-            </div>
-          ))}
+          {/* Device bounding boxes with severity coloring */}
+          {mpActive && mpScores.detectedObjects.length > 0 && mpScores.detectedObjects.map((obj, i) => {
+            const isSuspicious = ["cell phone", "remote", "laptop", "tablet"].includes(obj.label.toLowerCase());
+            return (
+              <div
+                key={i}
+                className={`absolute rounded-md pointer-events-none z-30 ${isSuspicious ? "border-2 border-destructive animate-pulse" : "border border-amber-400/60"}`}
+                style={{
+                  left: `${obj.x * 100}%`,
+                  top: `${obj.y * 100}%`,
+                  width: `${obj.width * 100}%`,
+                  height: `${obj.height * 100}%`,
+                }}
+              >
+                <span className={`absolute -top-5 left-0 text-[10px] font-bold px-1.5 py-0.5 rounded ${isSuspicious ? "bg-destructive text-destructive-foreground" : "bg-amber-500/80 text-white"}`}>
+                  {isSuspicious ? "📱" : "🔍"} {obj.label} ({obj.score}%)
+                </span>
+              </div>
+            );
+          })}
         </div>
 
         {transcript && (
@@ -1134,43 +1146,25 @@ const InterviewPage = () => {
                     {analysis.integrityAssessment.riskLevel === "None" ? "✓ Clean" : `⚠ ${analysis.integrityAssessment.riskLevel} Risk`}
                   </div>
                 </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Tab Switches</span>
-                    <p className={`text-2xl font-bold font-mono ${analysis.integrityAssessment.tabSwitches === 0 ? "text-emerald-400" : "text-destructive"}`}>
-                      {analysis.integrityAssessment.tabSwitches}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Look-Aways</span>
-                    <p className={`text-2xl font-bold font-mono ${analysis.integrityAssessment.lookAways === 0 ? "text-emerald-400" : "text-amber-400"}`}>
-                      {analysis.integrityAssessment.lookAways}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Head Tilts</span>
-                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.headTilts || 0) === 0 ? "text-emerald-400" : "text-amber-400"}`}>
-                      {analysis.integrityAssessment.headTilts || 0}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Erratic Eye</span>
-                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.erraticEyeMovements || 0) === 0 ? "text-emerald-400" : "text-destructive"}`}>
-                      {analysis.integrityAssessment.erraticEyeMovements || 0}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Multiple Faces</span>
-                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.multipleFaces || 0) === 0 ? "text-emerald-400" : "text-destructive"}`}>
-                      {analysis.integrityAssessment.multipleFaces || 0}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-card border border-border text-center">
-                    <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">Phone/Hand</span>
-                    <p className={`text-2xl font-bold font-mono ${(analysis.integrityAssessment.phoneDetections || 0) === 0 ? "text-emerald-400" : "text-destructive"}`}>
-                      {analysis.integrityAssessment.phoneDetections || 0}
-                    </p>
-                  </div>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "Tab Switches", value: analysis.integrityAssessment.tabSwitches, critical: true },
+                    { label: "Look-Aways", value: analysis.integrityAssessment.lookAways, critical: false },
+                    { label: "Head Tilts", value: analysis.integrityAssessment.headTilts || 0, critical: false },
+                    { label: "Erratic Eye", value: analysis.integrityAssessment.erraticEyeMovements || 0, critical: true },
+                    { label: "Multiple Faces", value: analysis.integrityAssessment.multipleFaces || 0, critical: true },
+                    { label: "Phone/Device", value: analysis.integrityAssessment.phoneDetections || 0, critical: true },
+                    { label: "Screen Share", value: analysis.integrityAssessment.screenShares || 0, critical: true },
+                    { label: "Copy/Paste", value: analysis.integrityAssessment.copyPastes || 0, critical: true },
+                    { label: "Inactivity", value: analysis.integrityAssessment.inactivity || 0, critical: false },
+                  ].map((item) => (
+                    <div key={item.label} className="p-4 rounded-lg bg-card border border-border text-center">
+                      <span className="text-xs text-muted-foreground uppercase font-semibold block mb-1">{item.label}</span>
+                      <p className={`text-2xl font-bold font-mono ${item.value === 0 ? "text-emerald-400" : item.critical ? "text-destructive" : "text-amber-400"}`}>
+                        {item.value}
+                      </p>
+                    </div>
+                  ))}
                 </div>
                 {analysis.integrityAssessment.notes && (
                   <p className="text-sm text-muted-foreground border-t border-border pt-3">{analysis.integrityAssessment.notes}</p>
