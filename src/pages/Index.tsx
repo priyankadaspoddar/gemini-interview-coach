@@ -206,9 +206,15 @@ const Index = () => {
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="container mx-auto flex h-16 items-center justify-between px-6">
-          <div className="flex items-center gap-2">
-            <Brain className="h-7 w-7 text-primary" />
-            <span className="text-xl font-bold">HAMII</span>
+          <div className="flex items-center gap-4">
+            <a href="https://hamii.vercel.app/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <Home className="h-4 w-4" />
+              <span className="hidden sm:inline">Home</span>
+            </a>
+            <div className="flex items-center gap-2">
+              <Brain className="h-7 w-7 text-primary" />
+              <span className="text-xl font-bold">HAMII</span>
+            </div>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
             <a href="#flowchart" className="hover:text-foreground transition-colors">Flowchart</a>
