@@ -492,10 +492,9 @@ const InterviewPage = () => {
         <p className="text-muted-foreground">Answer all {qs.length} questions. Speak your answer AND/OR type it below.</p>
       </div>
       <div className="rounded-xl border border-border bg-card p-6 glow-border">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-           <div className="flex items-center gap-2">
-              <span className="text-xs text-primary font-mono">{phaseLabel} — Question {currentQ + 1} of {qs.length}</span>
-            </div>
+        <div className="mb-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <span className="text-xs text-primary font-mono">{phaseLabel} — Question {currentQ + 1} of {qs.length}</span>
             <div className="flex items-center gap-2">
               <select
                 value={selectedVoiceURI}
@@ -514,6 +513,7 @@ const InterviewPage = () => {
                 {isSpeaking ? "Speaking..." : "Replay"}
               </Button>
             </div>
+          </div>
           <p className="text-lg font-medium mt-1">{qs[currentQ]?.question}</p>
           {isSpeaking && (
             <div className="flex items-center gap-2 mt-2 text-xs text-primary">
