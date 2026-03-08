@@ -426,7 +426,7 @@ const InterviewPage = () => {
         finalScores,
         allQuestions,
         resumeText,
-        apiKeyOverride,
+        apiKeyInput || undefined,
         {
           tabSwitches: tabSwitchCountRef.current,
           lookAways: lookAwayCountRef.current,

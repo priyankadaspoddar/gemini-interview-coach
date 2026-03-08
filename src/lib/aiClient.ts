@@ -149,7 +149,8 @@ export async function analyzePresentationDirect(
   allMediaPipeScores: Record<string, number>[],
   questions: { question: string }[],
   resumeText: string,
-  apiKeyOverride?: string
+  apiKeyOverride?: string,
+  cheatingData?: { tabSwitches: number; lookAways: number; warnings: { type: string; timestamp: number; question: number }[] }
 ): Promise<Record<string, unknown>> {
   const key = getKey(apiKeyOverride);
 

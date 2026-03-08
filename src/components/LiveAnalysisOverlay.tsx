@@ -1,4 +1,4 @@
-import { Activity, Eye, PersonStanding, Smile, Hand, Sparkles } from "lucide-react";
+import { Activity, Eye, PersonStanding, Smile, Hand, Sparkles, AlertTriangle, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface LiveAnalysisProps {
@@ -8,6 +8,9 @@ interface LiveAnalysisProps {
   bodyLanguage: number;
   detectedEmotion?: string;
   emotionConfidence?: number;
+  warning?: string | null;
+  tabSwitchCount?: number;
+  lookAwayCount?: number;
 }
 
 function getScoreColor(score: number) {
@@ -79,59 +82,93 @@ function MetricRow({ icon, label, value }: MetricRowProps) {
   );
 }
 
-export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLanguage, detectedEmotion = "Neutral", emotionConfidence = 0 }: LiveAnalysisProps) {
+export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLanguage, detectedEmotion = "Neutral", emotionConfidence = 0, warning, tabSwitchCount = 0, lookAwayCount = 0 }: LiveAnalysisProps) {
   const overall = Math.round((eyeContact + posture + expression + bodyLanguage) / 4);
   const emoji = EMOTION_EMOJI[detectedEmotion] || "😐";
+  const totalFlags = tabSwitchCount + lookAwayCount;
 
   return (
-    <div className="absolute top-3 right-3 w-48 bg-background/85 backdrop-blur-md rounded-xl p-3 border border-border/50 shadow-lg animate-fade-in">
-      {/* Header with pulse dot */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-1.5">
-          <div className="relative">
-            <Activity className="h-3.5 w-3.5 text-primary" />
-            <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          </div>
-          <span className="text-xs font-semibold text-foreground">Live Analysis</span>
-        </div>
-      </div>
-
-      {/* Emotion badge */}
-      <div className="flex items-center justify-center gap-1.5 mb-3 px-2 py-1.5 rounded-lg bg-muted/40 border border-border/30">
-        <Sparkles className="h-3 w-3 text-primary" />
-        <span className="text-[11px] text-muted-foreground">Emotion:</span>
-        <span className="text-sm">{emoji}</span>
-        <span className="text-[11px] font-semibold text-foreground">{detectedEmotion}</span>
-      </div>
-
-      {/* Overall score ring */}
-      <div className="flex items-center justify-center mb-3">
-        <div className={cn(
-          "relative h-14 w-14 rounded-full flex items-center justify-center",
-          "border-2 transition-colors duration-500",
-          overall >= 75 ? "border-emerald-500/60" : overall >= 50 ? "border-amber-500/60" : "border-red-500/60"
-        )}>
-          <div className="text-center">
-            <div className={cn(
-              "text-lg font-bold font-mono transition-colors duration-300",
-              overall >= 75 ? "text-emerald-400" : overall >= 50 ? "text-amber-400" : "text-red-400"
-            )}>
-              {overall}
-            </div>
-            <div className="text-[8px] text-muted-foreground uppercase tracking-wider">
-              {getScoreLabel(overall)}
-            </div>
+    <>
+      {/* Warning banner */}
+      {warning && (
+        <div className="absolute top-3 left-3 right-56 z-20 animate-fade-in">
+          <div className="bg-destructive/90 text-destructive-foreground rounded-lg px-3 py-2 text-xs font-medium flex items-center gap-2 shadow-lg">
+            <AlertTriangle className="h-4 w-4 flex-shrink-0 animate-pulse" />
+            <span>{warning}</span>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Metrics */}
-      <div className="space-y-2.5">
-        <MetricRow icon={<Eye className="h-3 w-3" />} label="Eye Contact" value={eyeContact} />
-        <MetricRow icon={<PersonStanding className="h-3 w-3" />} label="Posture" value={posture} />
-        <MetricRow icon={<Smile className="h-3 w-3" />} label="Expression" value={expression} />
-        <MetricRow icon={<Hand className="h-3 w-3" />} label="Body Lang" value={bodyLanguage} />
+      <div className="absolute top-3 right-3 w-48 bg-background/85 backdrop-blur-md rounded-xl p-3 border border-border/50 shadow-lg animate-fade-in">
+        {/* Header with pulse dot */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1.5">
+            <div className="relative">
+              <Activity className="h-3.5 w-3.5 text-primary" />
+              <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            </div>
+            <span className="text-xs font-semibold text-foreground">Live Analysis</span>
+          </div>
+          {totalFlags > 0 && (
+            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-destructive/20 text-destructive text-[9px] font-bold">
+              <Shield className="h-2.5 w-2.5" />
+              {totalFlags}
+            </div>
+          )}
+        </div>
+
+        {/* Integrity monitor */}
+        {totalFlags > 0 && (
+          <div className="mb-2.5 px-2 py-1.5 rounded-lg bg-destructive/10 border border-destructive/20 text-[10px]">
+            <div className="flex items-center gap-1 text-destructive font-semibold mb-0.5">
+              <Shield className="h-2.5 w-2.5" /> Integrity Monitor
+            </div>
+            {tabSwitchCount > 0 && (
+              <div className="text-muted-foreground">Tab switches: <span className="text-destructive font-mono">{tabSwitchCount}</span></div>
+            )}
+            {lookAwayCount > 0 && (
+              <div className="text-muted-foreground">Look-aways: <span className="text-destructive font-mono">{lookAwayCount}</span></div>
+            )}
+          </div>
+        )}
+
+        {/* Emotion badge */}
+        <div className="flex items-center justify-center gap-1.5 mb-3 px-2 py-1.5 rounded-lg bg-muted/40 border border-border/30">
+          <Sparkles className="h-3 w-3 text-primary" />
+          <span className="text-[11px] text-muted-foreground">Emotion:</span>
+          <span className="text-sm">{emoji}</span>
+          <span className="text-[11px] font-semibold text-foreground">{detectedEmotion}</span>
+        </div>
+
+        {/* Overall score ring */}
+        <div className="flex items-center justify-center mb-3">
+          <div className={cn(
+            "relative h-14 w-14 rounded-full flex items-center justify-center",
+            "border-2 transition-colors duration-500",
+            overall >= 75 ? "border-emerald-500/60" : overall >= 50 ? "border-amber-500/60" : "border-red-500/60"
+          )}>
+            <div className="text-center">
+              <div className={cn(
+                "text-lg font-bold font-mono transition-colors duration-300",
+                overall >= 75 ? "text-emerald-400" : overall >= 50 ? "text-amber-400" : "text-red-400"
+              )}>
+                {overall}
+              </div>
+              <div className="text-[8px] text-muted-foreground uppercase tracking-wider">
+                {getScoreLabel(overall)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Metrics */}
+        <div className="space-y-2.5">
+          <MetricRow icon={<Eye className="h-3 w-3" />} label="Eye Contact" value={eyeContact} />
+          <MetricRow icon={<PersonStanding className="h-3 w-3" />} label="Posture" value={posture} />
+          <MetricRow icon={<Smile className="h-3 w-3" />} label="Expression" value={expression} />
+          <MetricRow icon={<Hand className="h-3 w-3" />} label="Body Lang" value={bodyLanguage} />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
