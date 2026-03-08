@@ -54,18 +54,32 @@ const algorithms = [
     color: "primary",
   },
   {
+    icon: Shield,
+    title: "Integrity Monitor v1.0",
+    subtitle: "Anti-Cheating & Behavioral Anomaly Detection",
+    description: "Multi-signal cheating detection system that monitors tab switches, gaze direction, head orientation, and erratic eye movements in real-time to ensure interview authenticity.",
+    steps: [
+      "Track browser visibility changes (tab switch detection)",
+      "Monitor eye contact via MediaPipe — flag sustained look-aways (>5s below 25%)",
+      "Detect suspicious head tilts (>15° sustained for 6s+)",
+      "Analyze erratic eye movement patterns (3+ rapid swings of 30%+ amplitude)",
+      "Compile integrity risk assessment into final recruiter report",
+    ],
+    color: "accent",
+  },
+  {
     icon: Sparkles,
     title: "Intelligence Reporting",
     subtitle: "Professional Verdict & Analytics",
-    description: "Synthesizes verbal data and resume content to provide high-level recruitment analytics and alignment scores.",
+    description: "Synthesizes verbal data, non-verbal cues, and integrity metrics to provide high-level recruitment analytics and alignment scores.",
     steps: [
       "Map demonstrated skills to resume keywords",
       "Calculate alignment percentage and gap analysis",
       "Detect confidence trends and delivery metadata",
-      "Provide recruiter shortlist verdict (Yes/No)",
+      "Factor integrity flags into recruiter verdict",
       "Suggest suitable industry roles based on performance",
     ],
-    color: "accent",
+    color: "primary",
   }
 ];
 
