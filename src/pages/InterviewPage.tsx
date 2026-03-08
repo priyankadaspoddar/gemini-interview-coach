@@ -119,6 +119,7 @@ const InterviewPage = () => {
   const lastMultiFaceRef = useRef(0);
   const phoneDetectCountRef = useRef(0);
   const lastPhoneRef = useRef(0);
+  const screenShareCountRef = useRef(0);
 
   // Load available voices
   useEffect(() => {
