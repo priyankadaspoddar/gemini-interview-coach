@@ -150,7 +150,7 @@ export async function analyzePresentationDirect(
   questions: { question: string }[],
   resumeText: string,
   apiKeyOverride?: string,
-  cheatingData?: { tabSwitches: number; lookAways: number; headTilts: number; erraticEyeMovements: number; multipleFaces: number; phoneDetections: number; warnings: { type: string; timestamp: number; question: number }[] }
+  cheatingData?: { tabSwitches: number; lookAways: number; headTilts: number; erraticEyeMovements: number; multipleFaces: number; phoneDetections: number; screenShares: number; warnings: { type: string; timestamp: number; question: number }[] }
 ): Promise<Record<string, unknown>> {
   const key = getKey(apiKeyOverride);
 
