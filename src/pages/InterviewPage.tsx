@@ -294,18 +294,27 @@ const InterviewPage = () => {
         }
       }
 
-      // Multiple face detection
-      if (s.faceCount > 1 && now - lastMultiFaceRef.current > 5000) {
+      // Multiple face detection — severity-based warnings
+      if (s.faceCount > 1 && now - lastMultiFaceRef.current > 3000) {
         lastMultiFaceRef.current = now;
         multipleFaceCountRef.current++;
-        showWarningRef.current(`👥 ${s.faceCount} faces detected! Only the candidate should be visible.`, "multiple_faces");
+        const severity = s.faceCount >= 3 ? "🚨 CRITICAL" : "⚠️ WARNING";
+        const msg = s.faceCount >= 3
+          ? `${severity}: ${s.faceCount} faces detected! This is a serious integrity violation.`
+          : `👥 ${s.faceCount} faces detected! Only the candidate should be visible.`;
+        showWarningRef.current(msg, "multiple_faces");
+        if (s.faceCount >= 3) {
+          toast({ title: "Critical: Multiple Faces", description: `${s.faceCount} people detected on camera. This will be flagged in the report.`, variant: "destructive" });
+        }
       }
 
-      // Phone detection (via ObjectDetector)
-      if (s.phoneDetected && now - lastPhoneRef.current > 5000) {
+      // Phone/device detection (via ObjectDetector) — enhanced with object names
+      if (s.phoneDetected && now - lastPhoneRef.current > 3000) {
         lastPhoneRef.current = now;
         phoneDetectCountRef.current++;
-        showWarningRef.current("📱 Phone or device detected — keep devices away during the interview.", "phone_detect");
+        const deviceNames = s.detectedObjects.filter(o => ["cell phone", "remote", "laptop", "tablet"].includes(o.label.toLowerCase())).map(o => o.label).join(", ");
+        showWarningRef.current(`📱 Suspicious device detected (${deviceNames || "device"}) — keep all devices away during the interview.`, "phone_detect");
+        toast({ title: "Warning: Device Detected", description: `Detected: ${deviceNames || "electronic device"}. This is recorded.`, variant: "destructive" });
       }
 
       // Inactivity / camera freeze detection
