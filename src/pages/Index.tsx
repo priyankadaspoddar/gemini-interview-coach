@@ -222,6 +222,9 @@ const Index = () => {
             <a href="#technology" className="hover:text-foreground transition-colors">Technology</a>
             <a href="#algorithms" className="hover:text-foreground transition-colors">Algorithms</a>
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
+            <Button size="sm" variant="outline" onClick={downloadResearchPaperPdf} className="gap-2 border-border">
+              <FileDown className="h-4 w-4" /> Research Paper
+            </Button>
             <Link to="/interview">
               <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
                 Start Interview
