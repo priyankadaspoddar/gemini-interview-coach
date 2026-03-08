@@ -214,14 +214,14 @@ const InterviewPage = () => {
       }
 
       // Multiple face detection
-      if (mpScores.faceCount > 1 && now - lastMultiFaceRef.current > 8000) {
+      if (mpScores.faceCount > 1 && now - lastMultiFaceRef.current > 5000) {
         lastMultiFaceRef.current = now;
         multipleFaceCountRef.current++;
         showWarningRef.current(`👥 ${mpScores.faceCount} faces detected! Only the candidate should be visible.`, "multiple_faces");
       }
 
       // Phone/hand near face detection
-      if (mpScores.handNearFace && now - lastPhoneRef.current > 8000) {
+      if (mpScores.handNearFace && now - lastPhoneRef.current > 5000) {
         lastPhoneRef.current = now;
         phoneDetectCountRef.current++;
         showWarningRef.current("📱 Hand near face detected — possible phone usage. Keep hands away from your face.", "phone_detect");
