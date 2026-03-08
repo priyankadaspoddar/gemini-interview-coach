@@ -299,6 +299,8 @@ export function useMediaPipe(videoRef: React.RefObject<HTMLVideoElement>) {
       blinkRate: Math.round(sum.blinkRate / len),
       detectedEmotion: topEmotion,
       emotionConfidence: 0,
+      faceCount: 1,
+      handNearFace: false,
       emotionSummary,
     };
   }, []);
