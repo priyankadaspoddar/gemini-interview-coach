@@ -16,6 +16,8 @@ interface LiveAnalysisProps {
   multipleFaceCount?: number;
   phoneDetectCount?: number;
   screenShareCount?: number;
+  copyPasteCount?: number;
+  inactivityCount?: number;
 }
 
 function getScoreColor(score: number) {
@@ -87,10 +89,10 @@ function MetricRow({ icon, label, value }: MetricRowProps) {
   );
 }
 
-export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLanguage, detectedEmotion = "Neutral", emotionConfidence = 0, warning, tabSwitchCount = 0, lookAwayCount = 0, headTiltCount = 0, erraticEyeCount = 0, multipleFaceCount = 0, phoneDetectCount = 0, screenShareCount = 0 }: LiveAnalysisProps) {
+export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLanguage, detectedEmotion = "Neutral", emotionConfidence = 0, warning, tabSwitchCount = 0, lookAwayCount = 0, headTiltCount = 0, erraticEyeCount = 0, multipleFaceCount = 0, phoneDetectCount = 0, screenShareCount = 0, copyPasteCount = 0, inactivityCount = 0 }: LiveAnalysisProps) {
   const overall = Math.round((eyeContact + posture + expression + bodyLanguage) / 4);
   const emoji = EMOTION_EMOJI[detectedEmotion] || "😐";
-  const totalFlags = tabSwitchCount + lookAwayCount + headTiltCount + erraticEyeCount + multipleFaceCount + phoneDetectCount + screenShareCount;
+  const totalFlags = tabSwitchCount + lookAwayCount + headTiltCount + erraticEyeCount + multipleFaceCount + phoneDetectCount + screenShareCount + copyPasteCount + inactivityCount;
 
   return (
     <>
@@ -148,6 +150,12 @@ export function LiveAnalysisOverlay({ eyeContact, posture, expression, bodyLangu
             )}
             {screenShareCount > 0 && (
               <div className="text-muted-foreground">Screen share: <span className="text-destructive font-mono">{screenShareCount}</span></div>
+            )}
+            {copyPasteCount > 0 && (
+              <div className="text-muted-foreground">Copy/paste: <span className="text-destructive font-mono">{copyPasteCount}</span></div>
+            )}
+            {inactivityCount > 0 && (
+              <div className="text-muted-foreground">Inactivity: <span className="text-destructive font-mono">{inactivityCount}</span></div>
             )}
           </div>
         )}

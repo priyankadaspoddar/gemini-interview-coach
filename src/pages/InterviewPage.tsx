@@ -61,6 +61,8 @@ interface AnalysisResult {
     multipleFaces: number;
     phoneDetections: number;
     screenShares: number;
+    copyPastes: number;
+    inactivity: number;
     riskLevel: string;
     notes: string;
   };
@@ -121,6 +123,12 @@ const InterviewPage = () => {
   const phoneDetectCountRef = useRef(0);
   const lastPhoneRef = useRef(0);
   const screenShareCountRef = useRef(0);
+  const copyPasteCountRef = useRef(0);
+  const inactivityCountRef = useRef(0);
+  const lastInactivityRef = useRef(0);
+  const lastTranscriptRef = useRef("");
+  const lastTranscriptTimeRef = useRef(Date.now());
+  const prevFrameScoresRef = useRef<{ eye: number; posture: number } | null>(null);
 
   // Load available voices
   useEffect(() => {
@@ -230,6 +238,26 @@ const InterviewPage = () => {
     };
   }, [isPracticing, toast]);
 
+  // Copy-paste detection
+  useEffect(() => {
+    if (!isPracticing) return;
+    const handlePaste = () => {
+      copyPasteCountRef.current++;
+      showWarningRef.current("📋 Copy-paste detected! Using external content is flagged as suspicious.", "copy_paste");
+      toast({ title: "Warning: Copy-Paste", description: "Pasting content during the interview is flagged.", variant: "destructive" });
+    };
+    const handleCopy = () => {
+      copyPasteCountRef.current++;
+      showWarningRef.current("📋 Copy action detected! Copying interview content is flagged.", "copy_action");
+    };
+    document.addEventListener("paste", handlePaste);
+    document.addEventListener("copy", handleCopy);
+    return () => {
+      document.removeEventListener("paste", handlePaste);
+      document.removeEventListener("copy", handleCopy);
+    };
+  }, [isPracticing, toast]);
+
   useEffect(() => {
     if (!isPracticing || !mpActive) return;
     const checkInterval = setInterval(() => {
@@ -279,6 +307,19 @@ const InterviewPage = () => {
         phoneDetectCountRef.current++;
         showWarningRef.current("📱 Phone or device detected — keep devices away during the interview.", "phone_detect");
       }
+
+      // Inactivity / camera freeze detection
+      if (prevFrameScoresRef.current) {
+        const eyeDiff = Math.abs(s.eyeContact - prevFrameScoresRef.current.eye);
+        const postureDiff = Math.abs(s.posture - prevFrameScoresRef.current.posture);
+        // If scores barely change for 15+ seconds, flag as frozen/inactive
+        if (eyeDiff < 0.5 && postureDiff < 0.5 && now - lastInactivityRef.current > 15000) {
+          lastInactivityRef.current = now;
+          inactivityCountRef.current++;
+          showWarningRef.current("⏸️ Camera appears frozen or candidate is inactive. Please move to confirm presence.", "inactivity");
+        }
+      }
+      prevFrameScoresRef.current = { eye: s.eyeContact, posture: s.posture };
     }, 2000);
     return () => clearInterval(checkInterval);
   }, [isPracticing, mpActive]);
@@ -556,6 +597,8 @@ const InterviewPage = () => {
           multipleFaces: multipleFaceCountRef.current,
           phoneDetections: phoneDetectCountRef.current,
           screenShares: screenShareCountRef.current,
+          copyPastes: copyPasteCountRef.current,
+          inactivity: inactivityCountRef.current,
           warnings: cheatingWarnings,
         }
       );
@@ -740,6 +783,8 @@ const InterviewPage = () => {
               multipleFaceCount={multipleFaceCountRef.current}
               phoneDetectCount={phoneDetectCountRef.current}
               screenShareCount={screenShareCountRef.current}
+              copyPasteCount={copyPasteCountRef.current}
+              inactivityCount={inactivityCountRef.current}
             />
           )}
           {/* Phone bounding boxes */}
