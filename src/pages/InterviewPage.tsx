@@ -250,7 +250,9 @@ const InterviewPage = () => {
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
     setCameraOn(false);
+    setMediaPipeReady(false);
     if (isRecording) {
       recognitionRef.current?.stop();
       setIsRecording(false);
