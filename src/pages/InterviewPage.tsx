@@ -1176,6 +1176,16 @@ const InterviewPage = () => {
                           <span>{q.feedback}</span>
                         </div>
                       )}
+                      {(q.emotionDuringAnswer || q.bodyLanguageNote) && (
+                        <div className="mt-3 flex flex-wrap gap-3 text-xs">
+                          {q.emotionDuringAnswer && (
+                            <span className="px-2.5 py-1 rounded-full bg-primary/10 text-primary">😊 Emotion: {q.emotionDuringAnswer}</span>
+                          )}
+                          {q.bodyLanguageNote && (
+                            <span className="px-2.5 py-1 rounded-full bg-accent/10 text-accent">🧍 {q.bodyLanguageNote}</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
