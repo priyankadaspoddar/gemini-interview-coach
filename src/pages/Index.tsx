@@ -1,7 +1,8 @@
-import { FileText, Brain, Eye, Mic, ArrowRight, Upload, Sparkles, Shield, Zap, BookOpen, Layout, Database, CheckCircle, GitBranch, BarChart2, FileOutput, UserCheck, Cpu, Settings2, AlertTriangle, Home } from "lucide-react";
+import { FileText, Brain, Eye, Mic, ArrowRight, Upload, Sparkles, Shield, Zap, BookOpen, Layout, Database, CheckCircle, GitBranch, BarChart2, FileOutput, UserCheck, Cpu, Settings2, AlertTriangle, Home, FileDown } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { downloadResearchPaperPdf } from "@/lib/generateResearchPaperPdf";
 
 const stats = [
   { value: "95%+", label: "Recognition Accuracy" },
@@ -221,6 +222,9 @@ const Index = () => {
             <a href="#technology" className="hover:text-foreground transition-colors">Technology</a>
             <a href="#algorithms" className="hover:text-foreground transition-colors">Algorithms</a>
             <a href="#features" className="hover:text-foreground transition-colors">Features</a>
+            <Button size="sm" variant="outline" onClick={downloadResearchPaperPdf} className="gap-2 border-border">
+              <FileDown className="h-4 w-4" /> Research Paper
+            </Button>
             <Link to="/interview">
               <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
                 Start Interview
