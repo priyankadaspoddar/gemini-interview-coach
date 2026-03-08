@@ -476,6 +476,8 @@ const InterviewPage = () => {
         {
           tabSwitches: tabSwitchCountRef.current,
           lookAways: lookAwayCountRef.current,
+          headTilts: headTiltCountRef.current,
+          erraticEyeMovements: erraticEyeCountRef.current,
           warnings: cheatingWarnings,
         }
       );
