@@ -1,4 +1,4 @@
-import { FileText, Brain, Eye, Mic, ArrowRight, Upload, Sparkles, Shield, Zap, BookOpen, Layout, Database, CheckCircle, GitBranch, BarChart2, FileOutput, UserCheck, Cpu, Settings2, AlertTriangle } from "lucide-react";
+import { FileText, Brain, Eye, Mic, ArrowRight, Upload, Sparkles, Shield, Zap, BookOpen, Layout, Database, CheckCircle, GitBranch, BarChart2, FileOutput, UserCheck, Cpu, Settings2, AlertTriangle, Home } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
