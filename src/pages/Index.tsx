@@ -91,31 +91,31 @@ const algorithms = [
 const flowchartSteps = [
   {
     id: 1,
-    title: "Resume Ingestion",
-    desc: "PDF/Text extraction using PDF-JS popular PDF generation library.",
+    title: "Resume Processing",
+    desc: "PDF/Text extraction using PDF-JS-popular PDF generation library.",
     icon: Upload,
-    techs: ["PDF.js", "Web Worker"]
+    techs: ["PDF.js"]
   },
   {
     id: 2,
-    title: "NER-KE Analysis",
+    title: "Skill Analysis",
     desc: "Entity recognition for skills, roles, and experience mapping.",
     icon: Brain,
-    techs: ["Groq AI", "Llama-3", "Regex Engine"]
+    techs: ["Groq AI", "Groq API with Llama-3", "Named-Entity Recognition"]
   },
   {
     id: 3,
-    title: "Multimodal Session",
+    title: "Live Interview Session",
     desc: "Real-time sync of video frames and audio transcripts.",
     icon: Zap,
     techs: ["MediaPipe", "Web Speech API", "Web Real Time Communication"]
   },
   {
     id: 4,
-    title: "Intelligence synthesis",
+    title: "Performance Insights",
     desc: "Alignment scoring & recruiter verdict generation.",
     icon: Sparkles,
-    techs: ["FACS", "NLP Transformers", "SupaBase"]
+    techs: ["FACS", "NLP Engine"]
   }
 ];
 
