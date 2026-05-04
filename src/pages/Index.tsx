@@ -92,9 +92,9 @@ const flowchartSteps = [
   {
     id: 1,
     title: "Resume Ingestion",
-    desc: "PDF/Text extraction using OCR & semantic chunking.",
+    desc: "PDF/Text extraction using PDF-JS popular PDF generation library.",
     icon: Upload,
-    techs: ["PDF.js", "Tesseract", "Web Worker"]
+    techs: ["PDF.js", "Web Worker"]
   },
   {
     id: 2,
@@ -108,23 +108,23 @@ const flowchartSteps = [
     title: "Multimodal Session",
     desc: "Real-time sync of video frames and audio transcripts.",
     icon: Zap,
-    techs: ["MediaPipe", "Web Speech API", "WebRTC"]
+    techs: ["MediaPipe", "Web Speech API", "Web Real Time Communication"]
   },
   {
     id: 4,
     title: "Intelligence synthesis",
     desc: "Alignment scoring & recruiter verdict generation.",
     icon: Sparkles,
-    techs: ["FACS", "NLP Transformers", "Firebase"]
+    techs: ["FACS", "NLP Transformers", "SupaBase"]
   }
 ];
 
 const userJourneySteps = [
-  { id: 1, title: "Land & Authenticate", desc: "User visits the platform. Optional sign-in to unlock history & PDF reports.", icon: UserCheck, color: "primary", techs: ["Firebase Auth", "React Router", "Session Storage"] },
-  { id: 2, title: "Upload Resume", desc: "Drag-and-drop or browse for PDF/text. Instant client-side OCR extraction.", icon: Upload, color: "accent", techs: ["PDF.js", "pdfjs-dist", "File API"] },
-  { id: 3, title: "Configure Session", desc: "Choose interview type (Technical/HR), difficulty level, and question count.", icon: Settings2, color: "primary", techs: ["React State", "Zod Schema", "LocalStorage"] },
-  { id: 4, title: "Live Practice", desc: "Answer questions with live video & voice capture. AI monitors in real-time.", icon: Cpu, color: "accent", techs: ["MediaPipe", "Web Speech API", "WebRTC"] },
-  { id: 5, title: "Receive Report", desc: "Instant comprehensive analytics, skill-alignment scores, and PDF download.", icon: FileOutput, color: "primary", techs: ["jsPDF", "Recharts", "Firebase Firestore"] },
+  { id: 1, title: "Get Started", desc: "Open the platform and begin your session.", icon: UserCheck, color: "primary", techs: [""] },
+  { id: 2, title: "Upload Your Resume", desc: "Drag-and-drop or browse for PDF/text. Instant client side PDF extraction.", icon: Upload, color: "accent", techs: [""] },
+  { id: 3, title: "Start Interview", desc: "Choose interview type-Resume based/HR based interview ", icon: Settings2, color: "primary", techs: [""] },
+  { id: 4, title: "Live Interviiew Practice", desc: "Answer questions with live video & voice capture. AI monitors in real-time.", icon: Cpu, color: "accent", techs: [""] },
+  { id: 5, title: "Receive Report", desc: "Instant comprehensive analytics, skill-alignment scores, and PDF download.", icon: FileOutput, color: "primary", techs: [""] },
 ];
 
 const aiDecisionSteps = [
