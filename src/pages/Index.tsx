@@ -127,19 +127,18 @@ const userJourneySteps = [
 ];
 
 const aiDecisionSteps = [
-  { id: 1, title: "Context Seeding", desc: "Feed parsed resume entities into a structured prompt template with zero-hallucination rules.", icon: Brain, color: "primary", techs: ["Groq Cloud", "Prompt Engineering", "JSON Schema"] },
-  { id: 2, title: "Source Validation", desc: "Cross-check every generated question against source entities to prevent fabrication.", icon: CheckCircle, color: "accent", techs: ["Regex Matching", "Entity Index", "Confidence Score"] },
-  { id: 3, title: "Difficulty Routing", desc: "Route questions to Easy / Medium / Hard buckets based on the user configured difficulty.", icon: GitBranch, color: "primary", techs: ["Llama-3 Inference", "Routing Logic", "Fallback Rules"] },
-  { id: 4, title: "Adaptive Re-ranking", desc: "Re-order questions based on confidence trends detected mid-session from voice & video.", icon: BarChart2, color: "accent", techs: ["FACS Scores", "Voice Analytics", "Priority Queue"] },
-  { id: 5, title: "Final Verdict", desc: "Generate recruiter shortlist verdict (Yes/No/Maybe) with actionable reasoning.", icon: Sparkles, color: "primary", techs: ["Groq Llama-3", "Chain-of-Thought", "Structured Output"] },
+  { id: 1, title: "Upload Resume", desc: "Turn your resume into reliable interview questions.", icon: Brain, color: "primary", techs: ["Groq Cloud", "PDF-js"] },
+  { id: 2, title: "Source Validation", desc: "Ensures every question matches your resume and nothing is made up.", icon: CheckCircle, color: "accent", techs: ["Regex Matching", "Entity Index"] },
+  { id: 3, title: "Difficulty Routing", desc: "Route questions to Easy / Medium / Hard buckets based on the user configured difficulty.", icon: GitBranch, color: "primary", techs: ["Llama-3 Inference"] },
+  { id: 5, title: "Final Verdict", desc: "Generate recruiter shortlist verdict (Yes/No/Maybe) with actionable reasoning.", icon: Sparkles, color: "primary", techs: ["Groq Llama-3", "Structured Output"] },
 ];
 
 const reportPipelineSteps = [
-  { id: 1, title: "Data Aggregation", desc: "Collect all voice transcripts, FACS scores, and question-response pairs at session end.", icon: Database, color: "primary", techs: ["React Context", "Session Buffer", "Firestore"] },
-  { id: 2, title: "Skill Alignment", desc: "Map spoken keywords against resume entities. Calculate match % and identify skill gaps.", icon: GitBranch, color: "accent", techs: ["NER-KE v2.0", "Token Matching", "Gap Analysis"] },
-  { id: 3, title: "Multimodal Scoring", desc: "Combine FACS facial scores and voice clarity scores into a composite performance index.", icon: BarChart2, color: "primary", techs: ["Weighted Avg", "FACS Classifier", "Voice Analytics"] },
-  { id: 4, title: "Narrative Generation", desc: "Groq Llama-3 synthesizes scores into human-readable improvement suggestions.", icon: Sparkles, color: "accent", techs: ["Groq Cloud", "Report Template", "Llama-3 70B"] },
-  { id: 5, title: "PDF Export", desc: "Render typeset professional report as PDF with charts, scores, and recruiter verdict.", icon: FileOutput, color: "primary", techs: ["jsPDF", "Canvas Renderer", "Blob Download"] },
+{ id: 1, title: "Collect Data", desc: "Collect your answers, voice text, and facial data after the interview.", icon: Database, color: "primary", techs: [""] },
+{ id: 2, title: "Match Skills", desc: "Compare your answers with your resume and find strengths and gaps.", icon: GitBranch, color: "accent", techs: ["NER-KE v2.0", "Token Matching", "Gap Analysis"] },
+{ id: 3, title: "Calculate Score", desc: "Combine your voice and facial data to create a performance score.", icon: BarChart2, color: "primary", techs: ["Weighted Avg", "FACS Classifier", "Voice Analytics"] },
+{ id: 4, title: "Generate Feedback", desc: "Feedback report and suggestions provided to help you improve.", icon: Sparkles, color: "accent", techs: ["Groq Cloud", "Report Template", "Llama-3 70B"] },
+{ id: 5, title: "Download Report", desc: "Get a PDF report with your results and feedback.", icon: FileOutput, color: "primary", techs: ["jsPDF"] },
 ];
 
 const detailedTechStack = [
