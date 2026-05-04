@@ -59,14 +59,14 @@ const algorithms = [
     description: "Comprehensive 9-signal integrity system combining browser monitoring, computer vision object detection, and behavioral analysis to ensure interview authenticity.",
     steps: [
       "Check if you switch tabs during the interview",
-      "Monitor eye contact via MediaPipe — Track if you’re looking at the screen",
+      "Track if you’re looking at the screen",
       "Detect suspicious head tilts",
       "Detect suspicious gaze patterns",
       "Detect multiple faces in frame via FaceLandmarker",
       "Phone/device detection using EfficientDet-Lite0 ObjectDetector with bounding boxes",
       "Check if screen sharing or recording is used",
       "Detect copy-paste actions during the interview",
-      "Detect Camera freeze & inactivity detection",
+      "Detect Camera freeze or inactivity detection",
       "Combine 9-metric integrity risk assessment to give final recruiter report.",
     ],
     color: "accent",
@@ -138,7 +138,7 @@ const reportPipelineSteps = [
 { id: 2, title: "Match Skills", desc: "Compare your answers with your resume and find strengths and gaps.", icon: GitBranch, color: "accent", techs: ["NER-KE v2.0", "Token Matching", "Gap Analysis"] },
 { id: 3, title: "Calculate Score", desc: "Combine your voice and facial data to create a performance score.", icon: BarChart2, color: "primary", techs: ["Weighted Avg", "FACS Classifier", "Voice Analytics"] },
 { id: 4, title: "Generate Feedback", desc: "Feedback report and suggestions provided to help you improve.", icon: Sparkles, color: "accent", techs: ["Groq Cloud", "Report Template", "Llama-3 70B"] },
-{ id: 5, title: "Download Report", desc: "Get a PDF report with your results and feedback.", icon: FileOutput, color: "primary", techs: ["jsPDF"] },
+{ id: 5, title: "Download Report", desc: "Get a PDF report with your results and feedback.", icon: FileOutput, color: "primary", techs: [""] },
 ];
 
 const detailedTechStack = [
@@ -146,37 +146,37 @@ const detailedTechStack = [
   {
     category: "Frontend & UI/UX",
     icon: Layout,
-    description: "High-performance, responsive interface with glassmorphism and real-time state synchronization.",
-    features: ["React 18 Concurrent Mode", "Tailwind CSS Design System", "Framer Motion Animations", "Lucide Icon Suite"],
-    specs: { "Core": "Vite / React", "Styling": "PostCSS / Tailwind", "State": "React Context / Hooks", "Performance": "98+ Lighthouse" }
+    description: "High-performance and responsive interface with real-time updates.",
+   features: ["React 18 (fast UI)", "Tailwind CSS (easy styling and design)", "Lucide Icons (icons)"],
+specs: { "Core": "React", "Styling": "Tailwind", "State": "React Context (manage data)" }
   },
   {
     category: "Computer Vision",
     icon: Eye,
     description: "Advanced facial analysis and gesture recognition running directly in the browser.",
-    features: ["FACS (Facial Action Coding System)", "MediaPipe Face Mesh", "EfficientDet-Lite0 ObjectDetector", "Posture & Head Tilt Tracking"],
+    features: ["FACS (Facial Action Coding System)", "MediaPipe Face Mesh", "EfficientDet-Lite0 ObjectDetector"],
     specs: { "Inference": "GPU Accelerated", "Latency": "< 30ms", "Markers": "468 3D Points", "Accuracy": "94.2%" }
   },
   {
     category: "Audio & Speech",
     icon: Mic,
-    description: "Low-latency transcription and vocal characteristics analysis for delivery coaching.",
-    features: ["Web Speech API Integration", "Filler Word Detection (NLP)", "Pacing & Clarity Analysis", "Sentiment Tone Analysis"],
-    specs: { "Sample Rate": "44.1kHz", "Latency": "< 100ms", "Word Error Rate": "4.5%", "Language": "Multi-lingual" }
+    description: "Fast speech-to-text and voice analysis to improve how you speak.",
+    features: ["Web Speech API", "Filler Word Detection (NLP)", "Pacing & Clarity Analysis", "Sentiment Tone Analysis"],
+    specs: { "Sample Rate": "44.1kHz", "Latency": "< 100ms", "Word Error Rate": "4.5%", "Language":"English" }
   },
   {
     category: "AI & NLP Core",
     icon: Brain,
-    description: "State-of-the-art inference engine for specialized interview question generation and reporting.",
-    features: ["Groq Llama-3 70B Model", "NER-KE Proprietary Algorithm", "Zero-Hallucination Guardrails", "Integrity Monitor v2.0"],
-    specs: { "API": "Groq Cloud", "Speed": "300 tokens/sec", "Architecture": "Transformer V2", "Logic": "Few-shot Prompting" }
+    description: "Advanced AI system that creates interview questions and reports based on your resume and performance.",
+    features: ["Groq Llama-3 70B Model", "NER-KE Algorithm", "Zero-Hallucination", "Integrity Monitor v2.0"],
+    specs: { "API": "Groq Cloud", "Speed": "300 tokens/sec", "Architecture": "Transformer V2", "Logic": "Smart prompt-based reasoning" }
   },
   {
     category: "Backend & Infrastructure",
     icon: Database,
-    description: "Secure, scalable cloud services for data persistence and authentication.",
-    features: ["Firebase Firestore NoSQL", "Supabase Client Integration", "Real-time Database Sync", "Edge Function Capability"],
-    specs: { "DB": "Firestore", "Auth": "Firebase/Supabase", "Hosting": "Vercel Edge", "Availability": "99.99%" }
+    description: "Safe and reliable cloud services to store data via SupaBase.",
+    features: ["Cloud DataBase Storage", "Real-time Database Sync","Scalable backend support"],
+    specs: { "DataBase":"Supabase", "Hosting": "Vercel Edge", "Availability": "99.99%" }
   }
 ];
 
