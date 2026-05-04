@@ -115,7 +115,7 @@ const flowchartSteps = [
     title: "Performance Insights",
     desc: "Alignment scoring & recruiter verdict generation.",
     icon: Sparkles,
-    techs: ["FACS", "NLP Engine"]
+    techs: ["FACS", "NLP Engjine"]
   }
 ];
 
