@@ -45,11 +45,10 @@ const algorithms = [
     subtitle: "Speech Pattern & Delivery Analysis",
     description: "Analyzes speech transcripts for clarity, pacing, tone confidence, filler word detection, and overall engagement scoring using NLP techniques.",
     steps: [
-      "Transcribe speech via Web Speech API",
+      "Convert your speech into text using Web Speech API"
       "Analyze filler word frequency (um, uh, like)",
       "Evaluate sentence structure and coherence",
       "Score pace, clarity, tone, and engagement (25-100)",
-      "Generate actionable delivery feedback",
     ],
     color: "primary",
   },
@@ -59,30 +58,30 @@ const algorithms = [
     subtitle: "Anti-Cheating & Behavioral Anomaly Detection",
     description: "Comprehensive 9-signal integrity system combining browser monitoring, computer vision object detection, and behavioral analysis to ensure interview authenticity.",
     steps: [
-      "Track browser visibility changes (tab switch detection via Visibility API)",
-      "Monitor eye contact via MediaPipe — flag sustained look-aways (<40% for 3s+)",
-      "Detect suspicious head tilts (>8° sustained for 4s+)",
-      "Detect suspicious gaze patterns (3+ rapid swings of 30%+ amplitude)",
-      "Detect multiple faces in frame via FaceLandmarker (up to 4 faces tracked)",
+      "Check if you switch tabs during the interview",
+      "Monitor eye contact via MediaPipe — Track if you’re looking at the screen",
+      "Detect suspicious head tilts",
+      "Detect suspicious gaze patterns",
+      "Detect multiple faces in frame via FaceLandmarker",
       "Phone/device detection using EfficientDet-Lite0 ObjectDetector with bounding boxes",
-      "Screen sharing/recording interception via getDisplayMedia API monkey-patching",
-      "Copy-paste detection — flags clipboard copy & paste events during interview",
-      "Camera freeze & inactivity detection — flags <0.5 score variance over 15s",
-      "Compile 9-metric integrity risk assessment into final recruiter report",
+      "Check if screen sharing or recording is used",
+      "Detect copy-paste actions during the interview",
+      "Detect Camera freeze & inactivity detection",
+      "Combine 9-metric integrity risk assessment to give final recruiter report.",
     ],
     color: "accent",
   },
   {
     icon: Sparkles,
-    title: "Intelligence Reporting",
+    title: "Performance Report",
     subtitle: "Professional Verdict & Analytics",
     description: "Synthesizes verbal data, non-verbal cues, and integrity metrics to provide high-level recruitment analytics and alignment scores.",
     steps: [
-      "Map demonstrated skills to resume keywords",
-      "Calculate alignment percentage and gap analysis",
-      "Detect confidence trends and delivery metadata",
-      "Factor integrity flags into recruiter verdict",
-      "Suggest suitable industry roles based on performance",
+      "Match your answers with skills mentioned in your resume",
+      "Calculate how well your performance matches and show gaps",
+      "Track your confidence and speaking style over time",
+      "Check for any suspicious behavior and include it in the final decision",
+      "Suggest suitable industry roles based on your performance",
     ],
     color: "primary",
   }
@@ -115,12 +114,12 @@ const flowchartSteps = [
     title: "Performance Insights",
     desc: "Alignment scoring & recruiter verdict generation.",
     icon: Sparkles,
-    techs: ["FACS", "NLP Engjine"]
+    techs: ["FACS", "NLP Engine"]
   }
 ];
 
 const userJourneySteps = [
-  { id: 1, title: "Get Started", desc: "Open the platform and begin your session.", icon: UserCheck, color: "primary", techs: [""] },
+  { id: 1, title: "Get Started", desc: "Open the platform and begin your session.", icon: UserCheck, color: "primary", },
   { id: 2, title: "Upload Your Resume", desc: "Drag-and-drop or browse for PDF/text. Instant client side PDF extraction.", icon: Upload, color: "accent", techs: [""] },
   { id: 3, title: "Start Interview", desc: "Choose interview type-Resume based/HR based interview ", icon: Settings2, color: "primary", techs: [""] },
   { id: 4, title: "Live Interviiew Practice", desc: "Answer questions with live video & voice capture. AI monitors in real-time.", icon: Cpu, color: "accent", techs: [""] },
