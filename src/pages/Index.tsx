@@ -45,7 +45,7 @@ const algorithms = [
     subtitle: "Speech Pattern & Delivery Analysis",
     description: "Analyzes speech transcripts for clarity, pacing, tone confidence, filler word detection, and overall engagement scoring using NLP techniques.",
     steps: [
-      "Convert your speech into text using Web Speech API"
+      "Convert your speech into text using Web Speech API",
       "Analyze filler word frequency (um, uh, like)",
       "Evaluate sentence structure and coherence",
       "Score pace, clarity, tone, and engagement (25-100)",
@@ -122,7 +122,7 @@ const userJourneySteps = [
   { id: 1, title: "Get Started", desc: "Open the platform and begin your session.", icon: UserCheck, color: "primary", techs: [""] },
   { id: 2, title: "Upload Your Resume", desc: "Drag-and-drop or browse for PDF/text. Instant client side PDF extraction.", icon: Upload, color: "accent", techs: [""] },
   { id: 3, title: "Start Interview", desc: "Choose interview type-Resume based/HR based interview ", icon: Settings2, color: "primary", techs: [""] },
-  { id: 4, title: "Live Interviiew Practice", desc: "Answer questions with live video & voice capture. AI monitors in real-time.", icon: Cpu, color: "accent", techs: [""] },
+  { id: 4, title: "Live Interview Practice", desc: "Answer questions with live video & voice capture. AI monitors in real-time.", icon: Cpu, color: "accent", techs: [""] },
   { id: 5, title: "Receive Report", desc: "Instant comprehensive analytics, skill-alignment scores, and PDF download.", icon: FileOutput, color: "primary", techs: [""] },
 ];
 
