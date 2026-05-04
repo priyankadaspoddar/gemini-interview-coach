@@ -119,7 +119,7 @@ const flowchartSteps = [
 ];
 
 const userJourneySteps = [
-  { id: 1, title: "Get Started", desc: "Open the platform and begin your session.", icon: UserCheck, color: "primary", },
+  { id: 1, title: "Get Started", desc: "Open the platform and begin your session.", icon: UserCheck, color: "primary", techs: [""] },
   { id: 2, title: "Upload Your Resume", desc: "Drag-and-drop or browse for PDF/text. Instant client side PDF extraction.", icon: Upload, color: "accent", techs: [""] },
   { id: 3, title: "Start Interview", desc: "Choose interview type-Resume based/HR based interview ", icon: Settings2, color: "primary", techs: [""] },
   { id: 4, title: "Live Interviiew Practice", desc: "Answer questions with live video & voice capture. AI monitors in real-time.", icon: Cpu, color: "accent", techs: [""] },
