@@ -169,7 +169,7 @@ specs: { "Core": "React", "Styling": "Tailwind", "State": "React Context (manage
     icon: Brain,
     description: "Advanced AI system that creates interview questions and reports based on your resume and performance.",
     features: ["Groq Llama-3 70B Model", "NER-KE Algorithm", "Zero-Hallucination", "Integrity Monitor v2.0"],
-    specs: { "API": "Groq Cloud", "Speed": "300 tokens/sec", "Architecture": "Transformer V2", "Logic": "Smart prompt-based reasoning" }
+    specs: { "API": "Groq Cloud", "Speed": "300 tokens/sec", "Architecture": "Transformer V2" }
   },
   {
     category: "Backend & Infrastructure",
